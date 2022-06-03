@@ -21,9 +21,8 @@ var (
 		"json": true,
 	}
 	validStorageOptions = map[string]bool{
-		"memory":   true,
-		"redis":    true,
-		"postgres": true,
+		"memory": true,
+		"redis":  true,
 	}
 	validJobQueueOptions = map[string]bool{
 		"memory": true,
@@ -94,16 +93,8 @@ type Scheduler struct {
 }
 
 type Storage struct {
-	Option   string   `yaml:"option"`
-	Postgres Postgres `yaml:"postgres"`
-	Redis    Redis    `yaml:"redis"`
-}
-
-type Postgres struct {
-	DSN                   string
-	ConnectionMaxLifetime int `yaml:"connection_max_lifetime"`
-	MaxIdleConnections    int `yaml:"max_idle_connections"`
-	MaxOpenConnections    int `yaml:"max_open_connections"`
+	Option string `yaml:"option"`
+	Redis  Redis  `yaml:"redis"`
 }
 
 type Redis struct {
@@ -236,20 +227,6 @@ func (cfg *Config) setLoggingFormatConfig() error {
 func (cfg *Config) setStorageConfig() error {
 	if _, ok := validStorageOptions[cfg.Storage.Option]; !ok {
 		return fmt.Errorf("%s is not a valid storage option, valid options: %v", cfg.Storage.Option, validStorageOptions)
-	}
-	if cfg.Storage.Option == "postgres" {
-
-		cfg.Storage.Postgres.DSN = "0.0.0.0"
-
-		if cfg.Storage.Postgres.ConnectionMaxLifetime == 0 {
-			cfg.Storage.Postgres.ConnectionMaxLifetime = 3000
-		}
-		if cfg.Storage.Postgres.MaxIdleConnections == 0 {
-			cfg.Storage.Postgres.MaxIdleConnections = 8
-		}
-		if cfg.Storage.Postgres.MaxOpenConnections == 0 {
-			cfg.Storage.Postgres.MaxOpenConnections = 8
-		}
 	}
 	if cfg.Storage.Option == "redis" {
 		url := redisURL
