@@ -25,6 +25,6 @@ func DummyTask(args ...interface{}) (interface{}, error) {
 }
 
 func downloadContent(URL, bucket string) string {
-	fmt.Println("downloadContent func OB AIDAN", URL, bucket)
+	fmt.Println("downloadContent func test", URL, bucket)
 	return "some metadata"
 }

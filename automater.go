@@ -19,7 +19,7 @@ import (
 	"syscall"
 	"time"
 
-	vlog "github.com/NubeIO/rubix-automater/pkg/logger"
+	"github.com/NubeIO/rubix-automater/pkg/logger"
 	"github.com/mitchellh/mapstructure"
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +36,7 @@ type autoMater struct {
 func New(configPath string) *autoMater {
 	taskService := tasksrv.New()
 	gracefulTerm := make(chan os.Signal, 1)
-	logger := vlog.NewLogger("automater", defaultLoggingFormat)
+	logger := logger.NewLogger("automater", defaultLoggingFormat)
 	return &autoMater{
 		configPath:       configPath,
 		taskService:      taskService,
@@ -53,7 +53,7 @@ func (v *autoMater) Run() {
 		v.logger.Fatalf("could not load config: %s", err)
 	}
 	if cfg.LoggingFormat != defaultLoggingFormat {
-		v.logger = vlog.NewLogger("automater", cfg.LoggingFormat)
+		v.logger = logger.NewLogger("automater", cfg.LoggingFormat)
 	}
 	taskRepo := v.taskService.GetTaskRepository()
 
@@ -68,7 +68,7 @@ func (v *autoMater) Run() {
 	jobService := jobsrv.New(storage, taskRepo, uuid.New(), intime.New())
 	resultService := resultsrv.New(storage)
 
-	workPoolLogger := vlog.NewLogger("workerpool", cfg.LoggingFormat)
+	workPoolLogger := logger.NewLogger("workerpool", cfg.LoggingFormat)
 	workService := worksrv.New(
 		storage, taskRepo, intime.New(), cfg.TimeoutUnit,
 		cfg.WorkerPool.Workers, cfg.WorkerPool.QueueCapacity, workPoolLogger)
@@ -77,7 +77,7 @@ func (v *autoMater) Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	schedulerLogger := vlog.NewLogger("scheduler", cfg.LoggingFormat)
+	schedulerLogger := logger.NewLogger("scheduler", cfg.LoggingFormat)
 	schedulerService := schedulersrv.New(jobQueue, storage, workService, intime.New(), schedulerLogger)
 	schedulerService.Schedule(ctx, time.Duration(cfg.Scheduler.StoragePollingInterval)*cfg.TimeoutUnit)
 	schedulerService.Dispatch(ctx, time.Duration(cfg.Scheduler.JobQueuePollingInterval)*cfg.TimeoutUnit)
