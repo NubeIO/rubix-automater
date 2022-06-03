@@ -42,7 +42,7 @@ func (srv *jobService) Create(
 	timeout int, taskParams map[string]interface{}) (*core.Job, error) {
 	var runAtTime time.Time
 
-	uuid, err := srv.uuidGen.Make()
+	uuid, err := srv.uuidGen.Make("job")
 	if err != nil {
 		return nil, err
 	}

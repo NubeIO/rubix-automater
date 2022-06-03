@@ -48,8 +48,8 @@ func New(configPath string) *autoMater {
 // Run runs the service.
 func (v *autoMater) Run() {
 	cfg := new(config.Config)
-	filepath, _ := filepath.Abs(v.configPath)
-	if err := cfg.Load(filepath); err != nil {
+	filePath, _ := filepath.Abs(v.configPath)
+	if err := cfg.Load(filePath); err != nil {
 		v.logger.Fatalf("could not load config: %s", err)
 	}
 	if cfg.LoggingFormat != defaultLoggingFormat {

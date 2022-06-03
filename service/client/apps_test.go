@@ -9,7 +9,7 @@ func TestHost(*testing.T) {
 
 	client := New("0.0.0.0", 8089)
 
-	data, _ := client.GetHosts()
+	data, _ := client.GetJobs()
 
 	if data.Jobs == nil {
 

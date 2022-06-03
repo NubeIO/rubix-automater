@@ -67,7 +67,7 @@ func (response *Response) AsJson() (interface{}, error) {
 	return out, nil
 }
 
-func (inst *Client) GetHost(uuid string) (data *core.Job, response *Response) {
+func (inst *Client) GetJob(uuid string) (data *core.Job, response *Response) {
 	path := fmt.Sprintf("%s/%s", Paths.Jobs.Path, uuid)
 	response = &Response{}
 	resp, err := inst.Rest.R().
@@ -76,7 +76,7 @@ func (inst *Client) GetHost(uuid string) (data *core.Job, response *Response) {
 	return resp.Result().(*core.Job), response.buildResponse(resp, err)
 }
 
-func (inst *Client) AddHost(body *core.Job) (data *core.Job, response *Response) {
+func (inst *Client) AddJob(body *core.Job) (data *core.Job, response *Response) {
 	path := fmt.Sprintf(Paths.Jobs.Path)
 	response = &Response{}
 	resp, err := inst.Rest.R().
@@ -90,7 +90,7 @@ type Jobs struct {
 	Jobs []core.Job `json:"jobs"`
 }
 
-func (inst *Client) GetHosts() (data *Jobs, response *Response) {
+func (inst *Client) GetJobs() (data *Jobs, response *Response) {
 	path := fmt.Sprintf(Paths.Jobs.Path)
 	response = &Response{}
 	resp, err := inst.Rest.R().
@@ -99,7 +99,7 @@ func (inst *Client) GetHosts() (data *Jobs, response *Response) {
 	return resp.Result().(*Jobs), response.buildResponse(resp, err)
 }
 
-func (inst *Client) DeleteHost(uuid string) (response *Response) {
+func (inst *Client) DeleteJob(uuid string) (response *Response) {
 	path := fmt.Sprintf("%s/%s", Paths.Jobs.Path, uuid)
 	response = &Response{}
 	resp, err := inst.Rest.R().

@@ -106,7 +106,7 @@ func (srv *workService) Stop() {
 func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	// Do not let the go-routines wait for result in case of early exit.
 	defer close(w.Result)
-	fmt.Println("ExecJobWork", w.Job.Name)
+	srv.logger.Info("ExecJobWork", w.Job.Name)
 
 	startedAt := srv.time.Now()
 	w.Job.MarkStarted(&startedAt)
@@ -137,7 +137,7 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	case jobResult = <-jobResultChan:
 		if jobResult.Error != "" {
 			failedAt := srv.time.Now()
-			srv.logger.Info("RAN FAILED", w.Job.Name)
+			srv.logger.Errorln("RAN FAILED", w.Job.Name)
 			w.Job.MarkFailed(&failedAt, jobResult.Error)
 		} else {
 			srv.logger.Info("RAN JOB", w.Job.Name)

@@ -44,7 +44,7 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*core
 
 	jobIDs := make([]string, 0)
 	for i := 0; i < len(jobs); i++ {
-		jobUUID, err := srv.uuidGen.Make()
+		jobUUID, err := srv.uuidGen.Make("pip")
 		if err != nil {
 			return nil, err
 		}

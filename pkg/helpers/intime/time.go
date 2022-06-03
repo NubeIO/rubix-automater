@@ -6,7 +6,7 @@ import (
 
 // Time represents intime.
 type Time interface {
-	Now() time.Time
+	Now(notInUTC ...bool) time.Time
 }
 
 // RealTime is a concrete implementation of Time interface.
@@ -18,6 +18,6 @@ func New() Time {
 }
 
 // Now returns a timestamp of the current datetime in UTC.
-func (rt *RealTime) Now() time.Time {
-	return time.Now().UTC()
+func (rt *RealTime) Now(notInUTC ...bool) time.Time {
+	return time.Now()
 }

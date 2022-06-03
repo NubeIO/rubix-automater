@@ -7,6 +7,6 @@ import (
 
 func main() {
 	v := automater.New("config.yaml")
-	v.RegisterTask("dummytask", tasks.DummyTask)
+	v.RegisterTask(tasks.PingHostName, tasks.PingHost)
 	v.Run()
 }
