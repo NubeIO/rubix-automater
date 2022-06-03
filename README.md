@@ -24,13 +24,15 @@ by including them in the request body.
 
 ```json
 {
-    "name": "a job",
-    "description": "what this job is all about, but briefly",
-    "task_name": "dummytask",
-    "task_params": {
-        "url": "www.some-fake-url.com"
-    },
-    "timeout": 10
+  "name": "run ping",
+  "description": "run a ping",
+  "task_name": "pinghost",
+  "task_params": {
+    "url": "nube-io.com",
+    "port": 443,
+    "errorOnFailSetting": 10
+  },
+  "timeout_in_sec": 100
 }
 ```
 
@@ -40,14 +42,16 @@ To schedule a new job to run at a specific time, add `run_at` field to the reque
 
 ```json
 {
-    "name": "a scheduled job",
-    "description": "what this scheduled job is all about, but briefly",
-    "task_name": "dummytask",
-    "run_at": "2022-06-06T15:04:05.999",
-    "task_params": {
-        "url": "www.some-fake-url.com"
-    },
-    "timeout": 10
+  "name": "run ping",
+  "description": "run a ping",
+  "task_name": "pinghost",
+  "run_at": "2022-06-04T02:23:00.426752075+10:00",
+  "task_params": {
+    "url": "nube-io.com",
+    "port": 443,
+    "errorOnFailSetting": 10
+  },
+  "timeout_in_sec": 100
 }
 ```
 
@@ -63,12 +67,14 @@ just like it's done with the jobs.
     "run_at": "2022-06-06T15:04:05.999",
     "jobs": [
         {
-            "name": "the first job",
-            "description": "some job description",
-            "task_name": "dummytask",
-            "task_params": {
-                "url": "www.some-fake-url.com"
-            }
+          "name": "run ping",
+          "description": "run a ping",
+          "task_name": "pinghost",
+          "task_params": {
+            "url": "nube-io.com",
+            "port": 443,
+            "errorOnFailSetting": 10
+          }
         },
         {
             "name": "a second job",

@@ -2,7 +2,7 @@ package resultsrv
 
 import (
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 )
 
 var _ automater.ResultService = &resultService{}
@@ -19,7 +19,7 @@ func New(storage automater.Storage) *resultService {
 }
 
 // Get fetches a job result.
-func (srv *resultService) Get(uuid string) (*core.JobResult, error) {
+func (srv *resultService) Get(uuid string) (*model.JobResult, error) {
 	return srv.storage.GetJobResult(uuid)
 }
 

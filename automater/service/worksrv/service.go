@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/automater/service/worksrv/work"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
@@ -90,8 +90,8 @@ func (srv *workService) Dispatch(w work.Work) {
 }
 
 // CreateWork creates and return a new Work instance.
-func (srv *workService) CreateWork(j *core.Job) work.Work {
-	resultChan := make(chan core.JobResult, 1)
+func (srv *workService) CreateWork(j *model.Job) work.Work {
+	resultChan := make(chan model.JobResult, 1)
 	return work.NewWork(j, resultChan, srv.timeoutUnit)
 }
 
@@ -110,7 +110,7 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 
 	startedAt := srv.time.Now()
 	w.Job.MarkStarted(&startedAt)
-	if err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
+	if _, err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
 		return err
 	}
 	timeout := DefaultJobTimeout
@@ -120,16 +120,16 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	jobResultChan := make(chan core.JobResult, 1)
+	jobResultChan := make(chan model.JobResult, 1)
 
 	srv.work(w.Job, jobResultChan, nil)
 
-	var jobResult core.JobResult
+	var jobResult model.JobResult
 	select {
 	case <-ctx.Done():
 		failedAt := srv.time.Now()
 		w.Job.MarkFailed(&failedAt, ctx.Err().Error())
-		jobResult = core.JobResult{
+		jobResult = model.JobResult{
 			JobID:    w.Job.UUID,
 			Metadata: nil,
 			Error:    ctx.Err().Error(),
@@ -145,7 +145,7 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 			w.Job.MarkCompleted(&completedAt)
 		}
 	}
-	if err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
+	if _, err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
 		return err
 	}
 	w.Result <- jobResult
@@ -162,12 +162,12 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 	if err != nil {
 		return err
 	}
-	var jobResult core.JobResult
+	var jobResult model.JobResult
 
 	for job, i := w.Job, 0; ; job, i = job.Next, i+1 {
 		startedAt := srv.time.Now()
 		job.MarkStarted(&startedAt)
-		if err := srv.storage.UpdateJob(job.UUID, job); err != nil {
+		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
 			return err
 		}
 		if i == 0 {
@@ -182,7 +182,7 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 			timeout = time.Duration(job.Timeout) * w.TimeoutUnit
 		}
 		ctx, cancel := context.WithTimeout(ctx, timeout)
-		jobResultChan := make(chan core.JobResult, 1)
+		jobResultChan := make(chan model.JobResult, 1)
 
 		srv.work(job, jobResultChan, jobResult.Metadata)
 
@@ -192,7 +192,7 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 			job.MarkFailed(&failedAt, ctx.Err().Error())
 			p.MarkFailed(&failedAt)
 
-			jobResult = core.JobResult{
+			jobResult = model.JobResult{
 				JobID:    job.UUID,
 				Metadata: nil,
 				Error:    ctx.Err().Error(),
@@ -213,10 +213,10 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		// Reset timeout.
 		cancel()
 
-		if err := srv.storage.UpdateJob(job.UUID, job); err != nil {
+		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
 			return err
 		}
-		if p.Status == core.Failed || p.Status == core.Completed {
+		if p.Status == model.Failed || p.Status == model.Completed {
 			if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
 				return err
 			}
@@ -224,7 +224,7 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		w.Result <- jobResult
 
 		// Stop the pipeline execution on failure.
-		if job.Status == core.Failed {
+		if job.Status == model.Failed {
 			break
 		}
 
@@ -238,14 +238,14 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 }
 
 func (srv *workService) work(
-	job *core.Job,
-	jobResultChan chan core.JobResult,
+	job *model.Job,
+	jobResultChan chan model.JobResult,
 	previousJobResultsMetadata interface{}) {
 
 	go func() {
 		defer func() {
 			if p := recover(); p != nil {
-				result := core.JobResult{
+				result := model.JobResult{
 					JobID:    job.UUID,
 					Metadata: nil,
 					Error:    fmt.Errorf("%v", p).Error(),
@@ -271,7 +271,7 @@ func (srv *workService) work(
 			errMsg = jobErr.Error()
 		}
 
-		result := core.JobResult{
+		result := model.JobResult{
 			JobID:    job.UUID,
 			Metadata: resultMetadata,
 			Error:    errMsg,

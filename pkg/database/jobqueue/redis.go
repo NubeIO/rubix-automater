@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/config"
 	"github.com/NubeIO/rubix-automater/pkg/logger"
 	rs "github.com/NubeIO/rubix-automater/pkg/redis"
@@ -30,7 +30,7 @@ func NewRedisQueue(cfg config.Redis, loggingFormat string) *redisQueue {
 	}
 }
 
-func (q *redisQueue) Push(j *core.Job) error {
+func (q *redisQueue) Push(j *model.Job) error {
 	key := q.GetRedisPrefixedKey("job-queue")
 	value, err := json.Marshal(j)
 	if err != nil {
@@ -45,7 +45,7 @@ func (q *redisQueue) Push(j *core.Job) error {
 	return nil
 }
 
-func (q *redisQueue) Pop() *core.Job {
+func (q *redisQueue) Pop() *model.Job {
 	key := q.GetRedisPrefixedKey("job-queue")
 	val, err := q.RPop(ctx, key).Bytes()
 	if err != nil {
@@ -54,7 +54,7 @@ func (q *redisQueue) Pop() *core.Job {
 		}
 		return nil
 	}
-	var j *core.Job
+	var j *model.Job
 	err = json.Unmarshal(val, &j)
 	if err != nil {
 		q.logger.Errorf("could not unmarshal message body: %s", err)

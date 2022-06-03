@@ -2,7 +2,7 @@ package pipectl
 
 import (
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/controller"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"net/http"
@@ -33,9 +33,9 @@ func (hdl *PipelineHTTPHandler) Create(c *gin.Context) {
 	body := NewRequestBodyDTO()
 	c.BindJSON(&body)
 
-	jobs := make([]*core.Job, 0)
+	jobs := make([]*model.Job, 0)
 	for _, jobDTO := range body.Jobs {
-		j := &core.Job{
+		j := &model.Job{
 			Name:               jobDTO.Name,
 			Description:        jobDTO.Description,
 			TaskName:           jobDTO.TaskName,

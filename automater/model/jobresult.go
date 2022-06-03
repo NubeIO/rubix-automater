@@ -1,4 +1,4 @@
-package core
+package model
 
 // JobResult contains the result of a job.
 type JobResult struct {

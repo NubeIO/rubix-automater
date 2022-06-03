@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"sort"
 	"time"
@@ -31,7 +31,7 @@ func New(url string, poolSize, minIdleConns int, keyPrefix string) *Redis {
 }
 
 // CreateJob adds a new job to the storage.
-func (rs *Redis) CreateJob(j *core.Job) error {
+func (rs *Redis) CreateJob(j *model.Job) error {
 	key := rs.getRedisKeyForJob(j.UUID)
 	value, err := json.Marshal(j)
 	if err != nil {
@@ -46,7 +46,7 @@ func (rs *Redis) CreateJob(j *core.Job) error {
 }
 
 // GetJob fetches a job from the storage.
-func (rs *Redis) GetJob(uuid string) (*core.Job, error) {
+func (rs *Redis) GetJob(uuid string) (*model.Job, error) {
 	key := rs.getRedisKeyForJob(uuid)
 	val, err := rs.Get(ctx, key).Bytes()
 	if err != nil {
@@ -56,7 +56,7 @@ func (rs *Redis) GetJob(uuid string) (*core.Job, error) {
 		return nil, err
 	}
 
-	var j *core.Job
+	var j *model.Job
 	err = json.Unmarshal(val, &j)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (rs *Redis) GetJob(uuid string) (*core.Job, error) {
 }
 
 // GetJobs fetches all jobs from the storage, optionally filters the jobs by status.
-func (rs *Redis) GetJobs(status core.JobStatus) ([]*core.Job, error) {
+func (rs *Redis) GetJobs(status model.JobStatus) ([]*model.Job, error) {
 	var keys []string
 	key := rs.GetRedisPrefixedKey("job:*")
 	iter := rs.Scan(ctx, 0, key, 0).Iterator()
@@ -76,17 +76,17 @@ func (rs *Redis) GetJobs(status core.JobStatus) ([]*core.Job, error) {
 		return nil, err
 	}
 
-	jobs := []*core.Job{}
+	jobs := []*model.Job{}
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
-		j := &core.Job{}
+		j := &model.Job{}
 		if err := json.Unmarshal(value, j); err != nil {
 			return nil, err
 		}
-		if status == core.Undefined || j.Status == status {
+		if status == model.Undefined || j.Status == status {
 			jobs = append(jobs, j)
 		}
 	}
@@ -99,18 +99,18 @@ func (rs *Redis) GetJobs(status core.JobStatus) ([]*core.Job, error) {
 }
 
 // GetJobsByPipelineID fetches the jobs of the specified pipeline.
-func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*core.Job, error) {
+func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*model.Job, error) {
 	key := rs.getRedisKeyForPipeline(pipelineID)
 	val, err := rs.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			// Mimic the relational storages behavior.
-			return []*core.Job{}, nil
+			return []*model.Job{}, nil
 		}
 		return nil, err
 	}
 
-	var p *core.Pipeline
+	var p *model.Pipeline
 	err = json.Unmarshal(val, &p)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*core.Job, error) {
 }
 
 // UpdateJob updates a job to the storage.
-func (rs *Redis) UpdateJob(uuid string, j *core.Job) error {
+func (rs *Redis) UpdateJob(uuid string, j *model.Job) (*model.Job, error) {
 	err := rs.Watch(ctx, func(tx *redis.Tx) error {
 		key := rs.getRedisKeyForJob(uuid)
 		value, err := json.Marshal(j)
@@ -140,7 +140,7 @@ func (rs *Redis) UpdateJob(uuid string, j *core.Job) error {
 				return err
 			}
 
-			var p *core.Pipeline
+			var p *model.Pipeline
 			err = json.Unmarshal(val, &p)
 			if err != nil {
 				return err
@@ -157,10 +157,11 @@ func (rs *Redis) UpdateJob(uuid string, j *core.Job) error {
 		}
 		return nil
 	})
+	job, err := rs.GetJob(uuid)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return job, nil
 }
 
 // DeleteJob deletes a job from the storage.
@@ -174,7 +175,7 @@ func (rs *Redis) DeleteJob(uuid string) error {
 }
 
 // GetDueJobs fetches all jobs scheduled to run before now and have not been scheduled yet.
-func (rs *Redis) GetDueJobs() ([]*core.Job, error) {
+func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 	var keys []string
 	key := rs.GetRedisPrefixedKey("job:*")
 	iter := rs.Scan(ctx, 0, key, 0).Iterator()
@@ -185,18 +186,18 @@ func (rs *Redis) GetDueJobs() ([]*core.Job, error) {
 		return nil, err
 	}
 
-	dueJobs := []*core.Job{}
+	dueJobs := []*model.Job{}
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
-		j := &core.Job{}
+		j := &model.Job{}
 		if err := json.Unmarshal(value, j); err != nil {
 			return nil, err
 		}
 		if j.IsScheduled() {
-			if j.RunAt.Before(time.Now()) && j.Status == core.Pending {
+			if j.RunAt.Before(time.Now()) && j.Status == model.Pending {
 				dueJobs = append(dueJobs, j)
 			}
 		}
@@ -210,7 +211,7 @@ func (rs *Redis) GetDueJobs() ([]*core.Job, error) {
 }
 
 // CreateJobResult adds a new job result to the storage.
-func (rs *Redis) CreateJobResult(result *core.JobResult) error {
+func (rs *Redis) CreateJobResult(result *model.JobResult) error {
 	key := rs.getRedisKeyForJobResult(result.JobID)
 	value, err := json.Marshal(result)
 	if err != nil {
@@ -225,7 +226,7 @@ func (rs *Redis) CreateJobResult(result *core.JobResult) error {
 }
 
 // GetJobResult fetches a job result from the storage.
-func (rs *Redis) GetJobResult(jobID string) (*core.JobResult, error) {
+func (rs *Redis) GetJobResult(jobID string) (*model.JobResult, error) {
 	key := rs.getRedisKeyForJobResult(jobID)
 	val, err := rs.Get(ctx, key).Bytes()
 	if err != nil {
@@ -235,7 +236,7 @@ func (rs *Redis) GetJobResult(jobID string) (*core.JobResult, error) {
 		return nil, err
 	}
 
-	var result *core.JobResult
+	var result *model.JobResult
 	err = json.Unmarshal(val, &result)
 	if err != nil {
 		return nil, err
@@ -244,7 +245,7 @@ func (rs *Redis) GetJobResult(jobID string) (*core.JobResult, error) {
 }
 
 // UpdateJobResult updates a job result to the storage.
-func (rs *Redis) UpdateJobResult(jobID string, result *core.JobResult) error {
+func (rs *Redis) UpdateJobResult(jobID string, result *model.JobResult) error {
 	key := rs.getRedisKeyForJobResult(jobID)
 	value, err := json.Marshal(result)
 	if err != nil {
@@ -269,7 +270,7 @@ func (rs *Redis) DeleteJobResult(jobID string) error {
 }
 
 // CreatePipeline adds a new pipeline and of its jobs to the storage.
-func (rs *Redis) CreatePipeline(p *core.Pipeline) error {
+func (rs *Redis) CreatePipeline(p *model.Pipeline) error {
 	err := rs.Watch(ctx, func(tx *redis.Tx) error {
 
 		for _, j := range p.Jobs {
@@ -304,7 +305,7 @@ func (rs *Redis) CreatePipeline(p *core.Pipeline) error {
 }
 
 // GetPipeline fetches a pipeline from the storage.
-func (rs *Redis) GetPipeline(uuid string) (*core.Pipeline, error) {
+func (rs *Redis) GetPipeline(uuid string) (*model.Pipeline, error) {
 	key := rs.getRedisKeyForPipeline(uuid)
 	val, err := rs.Get(ctx, key).Bytes()
 	if err != nil {
@@ -314,7 +315,7 @@ func (rs *Redis) GetPipeline(uuid string) (*core.Pipeline, error) {
 		return nil, err
 	}
 
-	var p *core.Pipeline
+	var p *model.Pipeline
 	err = json.Unmarshal(val, &p)
 	if err != nil {
 		return nil, err
@@ -323,7 +324,7 @@ func (rs *Redis) GetPipeline(uuid string) (*core.Pipeline, error) {
 }
 
 // GetPipelines fetches all pipelines from the storage, optionally filters the pipelines by status.
-func (rs *Redis) GetPipelines(status core.JobStatus) ([]*core.Pipeline, error) {
+func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error) {
 	var keys []string
 	key := rs.GetRedisPrefixedKey("pipeline:*")
 	iter := rs.Scan(ctx, 0, key, 0).Iterator()
@@ -334,17 +335,17 @@ func (rs *Redis) GetPipelines(status core.JobStatus) ([]*core.Pipeline, error) {
 		return nil, err
 	}
 
-	pipelines := []*core.Pipeline{}
+	pipelines := []*model.Pipeline{}
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
-		p := &core.Pipeline{}
+		p := &model.Pipeline{}
 		if err := json.Unmarshal(value, p); err != nil {
 			return nil, err
 		}
-		if status == core.Undefined || p.Status == status {
+		if status == model.Undefined || p.Status == status {
 			pipelines = append(pipelines, p)
 		}
 	}
@@ -358,7 +359,7 @@ func (rs *Redis) GetPipelines(status core.JobStatus) ([]*core.Pipeline, error) {
 }
 
 // UpdatePipeline updates a pipeline to the storage.
-func (rs *Redis) UpdatePipeline(uuid string, p *core.Pipeline) error {
+func (rs *Redis) UpdatePipeline(uuid string, p *model.Pipeline) error {
 	key := rs.getRedisKeyForPipeline(uuid)
 	value, err := json.Marshal(p)
 	if err != nil {
@@ -385,13 +386,13 @@ func (rs *Redis) DeletePipeline(uuid string) error {
 			return err
 		}
 
-		jobs := []*core.Job{}
+		jobs := []*model.Job{}
 		for _, key := range keys {
 			value, err := rs.Get(ctx, key).Bytes()
 			if err != nil {
 				return err
 			}
-			j := &core.Job{}
+			j := &model.Job{}
 			if err := json.Unmarshal(value, j); err != nil {
 				return err
 			}

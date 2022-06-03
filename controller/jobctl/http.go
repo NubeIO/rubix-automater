@@ -2,7 +2,7 @@ package jobctl
 
 import (
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/controller"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"net/http"
@@ -31,7 +31,7 @@ func (hdl *JobHTTPHandler) Create(c *gin.Context) {
 	c.BindJSON(&body)
 
 	j, err := hdl.jobService.Create(
-		body.Name, body.TaskName, body.Description, body.RunAt, body.Timeout, body.TaskParams)
+		body.Name, body.TaskName, body.Description, body.RunAt, body.Timeout, body.Disable, body.TaskParams)
 	if err != nil {
 		switch err.(type) {
 		case *apperrors.ResourceValidationErr:
@@ -105,7 +105,7 @@ func (hdl *JobHTTPHandler) Update(c *gin.Context) {
 	body := RequestBodyDTO{}
 	c.BindJSON(&body)
 
-	err := hdl.jobService.Update(c.Param("uuid"), body.Name, body.Description)
+	j, err := hdl.jobService.Update(c.Param("uuid"), body.Name, body.Description)
 	if err != nil {
 		switch err.(type) {
 		case *apperrors.NotFoundErr:
@@ -116,15 +116,16 @@ func (hdl *JobHTTPHandler) Update(c *gin.Context) {
 			return
 		}
 	}
-	c.Writer.WriteHeader(http.StatusNoContent)
+	c.JSON(http.StatusOK, BuildResponseBodyDTO(j))
 }
 
-// UpdateAll updates a job.
-func (hdl *JobHTTPHandler) UpdateAll(c *gin.Context) {
-	body := &core.Job{}
+// Recycle reuse a job
+//	-update the run_at time to reschedule a job
+func (hdl *JobHTTPHandler) Recycle(c *gin.Context) {
+	body := &model.Job{}
 	c.BindJSON(&body)
 
-	err := hdl.jobService.UpdateAll(c.Param("uuid"), body)
+	j, err := hdl.jobService.Recycle(c.Param("uuid"), body)
 	if err != nil {
 		switch err.(type) {
 		case *apperrors.NotFoundErr:
@@ -135,7 +136,7 @@ func (hdl *JobHTTPHandler) UpdateAll(c *gin.Context) {
 			return
 		}
 	}
-	c.Writer.WriteHeader(http.StatusNoContent)
+	c.JSON(http.StatusOK, BuildResponseBodyDTO(j))
 }
 
 type Delete struct {

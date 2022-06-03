@@ -1,4 +1,4 @@
-package core
+package model
 
 import (
 	"fmt"
@@ -9,8 +9,9 @@ import (
 
 // Job represents an async tasks.
 type Job struct {
-	UUID string `json:"uuid"`
-	Name string `json:"name"`
+	UUID    string `json:"uuid"`
+	Name    string `json:"name"`
+	Disable bool   `json:"disable"`
 
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
@@ -57,7 +58,7 @@ type Job struct {
 func NewJob(
 	uuid, name, taskName, description, pipelineID, nextJobID string,
 	timeout int, runAt *time.Time, createdAt *time.Time,
-	usePreviousResults bool, taskParams map[string]interface{}) *Job {
+	usePreviousResults bool, disable bool, taskParams map[string]interface{}) *Job {
 
 	if runAt.IsZero() {
 		runAt = nil
@@ -71,6 +72,7 @@ func NewJob(
 		UsePreviousResults: usePreviousResults,
 		Timeout:            timeout,
 		Description:        description,
+		Disable:            disable,
 		TaskParams:         taskParams,
 		Status:             Pending,
 		RunAt:              runAt,

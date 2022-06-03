@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
-	"time"
-
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 var _ automater.Scheduler = &schedulerService{}
@@ -87,6 +86,12 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 					continue
 				}
 				for _, j := range dueJobs {
+					if j.Disable {
+						srv.logger.Infoln("JOB Is Disable name:", j.Name)
+						continue
+					} else {
+						srv.logger.Infoln("JOB IS Not Disable", j.Name)
+					}
 					if j.BelongsToPipeline() {
 						for job := j; job.HasNext(); job = job.Next {
 							job.Next, err = srv.storage.GetJob(job.NextJobID)
@@ -102,7 +107,7 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 
 					scheduledAt := srv.time.Now()
 					j.MarkScheduled(&scheduledAt)
-					if err := srv.storage.UpdateJob(j.UUID, j); err != nil {
+					if _, err := srv.storage.UpdateJob(j.UUID, j); err != nil {
 						srv.logger.Errorf("could not update job: %s", err)
 					}
 					message := fmt.Sprintf("job with UUID: %s", j.UUID)

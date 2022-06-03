@@ -2,27 +2,27 @@ package jobqueue
 
 import (
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 )
 
 var _ automater.JobQueue = &fifoqueue{}
 
 type fifoqueue struct {
-	jobs     chan *core.Job
+	jobs     chan *model.Job
 	capacity int
 }
 
 // NewFIFOQueue creates and returns a new fifoqueue instance.
 func NewFIFOQueue(capacity int) *fifoqueue {
 	return &fifoqueue{
-		jobs:     make(chan *core.Job, capacity),
+		jobs:     make(chan *model.Job, capacity),
 		capacity: capacity,
 	}
 }
 
 // Push adds a job to the queue.
-func (q *fifoqueue) Push(j *core.Job) error {
+func (q *fifoqueue) Push(j *model.Job) error {
 	select {
 	case q.jobs <- j:
 		return nil
@@ -32,7 +32,7 @@ func (q *fifoqueue) Push(j *core.Job) error {
 }
 
 // Pop removes and returns the head job from the queue.
-func (q *fifoqueue) Pop() *core.Job {
+func (q *fifoqueue) Pop() *model.Job {
 	select {
 	case j := <-q.jobs:
 		return j

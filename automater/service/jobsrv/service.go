@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
@@ -39,7 +39,7 @@ func New(
 // Create creates a new job.
 func (srv *jobService) Create(
 	name, taskName, description, runAt string,
-	timeout int, taskParams map[string]interface{}) (*core.Job, error) {
+	timeout int, disable bool, taskParams map[string]interface{}) (*model.Job, error) {
 	var runAtTime time.Time
 
 	uuid, err := srv.uuidGen.Make("job")
@@ -53,10 +53,10 @@ func (srv *jobService) Create(
 		}
 	}
 	createdAt := srv.time.Now()
-	j := core.NewJob(
+	j := model.NewJob(
 		uuid, name, taskName, description,
 		"", "", timeout, &runAtTime,
-		&createdAt, false, taskParams)
+		&createdAt, false, disable, taskParams)
 
 	if err := j.Validate(srv.taskRepo); err != nil {
 		return nil, &apperrors.ResourceValidationErr{Message: err.Error()}
@@ -69,7 +69,7 @@ func (srv *jobService) Create(
 }
 
 // Get fetches a job.
-func (srv *jobService) Get(uuid string) (*core.Job, error) {
+func (srv *jobService) Get(uuid string) (*model.Job, error) {
 	j, err := srv.storage.GetJob(uuid)
 	if err != nil {
 		return nil, err
@@ -81,10 +81,10 @@ func (srv *jobService) Get(uuid string) (*core.Job, error) {
 }
 
 // GetJobs fetches all jobs, optionally filters the jobs by status.
-func (srv *jobService) GetJobs(status string) ([]*core.Job, error) {
-	var jobStatus core.JobStatus
+func (srv *jobService) GetJobs(status string) ([]*model.Job, error) {
+	var jobStatus model.JobStatus
 	if status == "" {
-		jobStatus = core.Undefined
+		jobStatus = model.Undefined
 	} else {
 		err := json.Unmarshal([]byte("\""+strings.ToUpper(status)+"\""), &jobStatus)
 		if err != nil {
@@ -104,21 +104,21 @@ func (srv *jobService) GetJobs(status string) ([]*core.Job, error) {
 }
 
 // Update updates a job.
-func (srv *jobService) Update(uuid, name, description string) error {
+func (srv *jobService) Update(uuid, name, description string) (*model.Job, error) {
 	j, err := srv.storage.GetJob(uuid)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	j.Name = name
 	j.Description = description
 	return srv.storage.UpdateJob(uuid, j)
 }
 
-// UpdateAll updates a job.
-func (srv *jobService) UpdateAll(uuid string, body *core.Job) error {
+// Recycle reuse a job.
+func (srv *jobService) Recycle(uuid string, body *model.Job) (*model.Job, error) {
 	j, err := srv.storage.GetJob(uuid)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	createdAt := srv.time.Now()
 	body.UUID = j.UUID

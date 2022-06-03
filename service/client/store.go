@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -67,27 +67,27 @@ func (response *Response) AsJson() (interface{}, error) {
 	return out, nil
 }
 
-func (inst *Client) GetJob(uuid string) (data *core.Job, response *Response) {
+func (inst *Client) GetJob(uuid string) (data *model.Job, response *Response) {
 	path := fmt.Sprintf("%s/%s", Paths.Jobs.Path, uuid)
 	response = &Response{}
 	resp, err := inst.Rest.R().
-		SetResult(&core.Job{}).
+		SetResult(&model.Job{}).
 		Get(path)
-	return resp.Result().(*core.Job), response.buildResponse(resp, err)
+	return resp.Result().(*model.Job), response.buildResponse(resp, err)
 }
 
-func (inst *Client) AddJob(body *core.Job) (data *core.Job, response *Response) {
+func (inst *Client) AddJob(body *model.Job) (data *model.Job, response *Response) {
 	path := fmt.Sprintf(Paths.Jobs.Path)
 	response = &Response{}
 	resp, err := inst.Rest.R().
 		SetBody(body).
-		SetResult(&core.Job{}).
+		SetResult(&model.Job{}).
 		Post(path)
-	return resp.Result().(*core.Job), response.buildResponse(resp, err)
+	return resp.Result().(*model.Job), response.buildResponse(resp, err)
 }
 
 type Jobs struct {
-	Jobs []core.Job `json:"jobs"`
+	Jobs []model.Job `json:"jobs"`
 }
 
 func (inst *Client) GetJobs() (data *Jobs, response *Response) {

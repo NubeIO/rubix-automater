@@ -2,7 +2,7 @@ package automater
 
 import (
 	"context"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/automater/service/worksrv/work"
 	"time"
@@ -10,22 +10,22 @@ import (
 
 // Storage represents a driven actor storage interface.
 type Storage interface {
-	CreateJob(j *core.Job) error
-	GetJob(uuid string) (*core.Job, error)
-	GetJobs(status core.JobStatus) ([]*core.Job, error)
-	GetDueJobs() ([]*core.Job, error)
-	GetJobsByPipelineID(pipelineID string) ([]*core.Job, error)
-	UpdateJob(uuid string, j *core.Job) error
+	CreateJob(j *model.Job) error
+	GetJob(uuid string) (*model.Job, error)
+	GetJobs(status model.JobStatus) ([]*model.Job, error)
+	GetDueJobs() ([]*model.Job, error)
+	GetJobsByPipelineID(pipelineID string) ([]*model.Job, error)
+	UpdateJob(uuid string, j *model.Job) (*model.Job, error)
 	DeleteJob(uuid string) error
-	CreateJobResult(result *core.JobResult) error
-	GetJobResult(jobID string) (*core.JobResult, error)
-	UpdateJobResult(jobID string, result *core.JobResult) error
+	CreateJobResult(result *model.JobResult) error
+	GetJobResult(jobID string) (*model.JobResult, error)
+	UpdateJobResult(jobID string, result *model.JobResult) error
 	DeleteJobResult(jobID string) error
-	CreatePipeline(p *core.Pipeline) error
-	GetPipeline(uuid string) (*core.Pipeline, error)
+	CreatePipeline(p *model.Pipeline) error
+	GetPipeline(uuid string) (*model.Pipeline, error)
 
-	GetPipelines(status core.JobStatus) ([]*core.Pipeline, error)
-	UpdatePipeline(uuid string, p *core.Pipeline) error
+	GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
+	UpdatePipeline(uuid string, p *model.Pipeline) error
 	DeletePipeline(uuid string) error
 	CheckHealth() bool
 	Close() error
@@ -34,10 +34,10 @@ type Storage interface {
 // JobQueue represents a driven actor queue interface.
 type JobQueue interface {
 	// Push adds a job to the queue.
-	Push(j *core.Job) error
+	Push(j *model.Job) error
 
 	// Pop removes and returns the head job from the queue.
-	Pop() *core.Job
+	Pop() *model.Job
 
 	// CheckHealth checks if the job queue is alive.
 	CheckHealth() bool
@@ -48,11 +48,11 @@ type JobQueue interface {
 
 // JobService represents a driver actor service interface.
 type JobService interface {
-	Create(name, taskName, description, runAt string, timeout int, taskParams map[string]interface{}) (*core.Job, error)
-	Get(uuid string) (*core.Job, error)
-	GetJobs(status string) ([]*core.Job, error)
-	Update(uuid, name, description string) error
-	UpdateAll(uuid string, body *core.Job) error
+	Create(name, taskName, description, runAt string, timeout int, disable bool, taskParams map[string]interface{}) (*model.Job, error)
+	Get(uuid string) (*model.Job, error)
+	GetJobs(status string) ([]*model.Job, error)
+	Update(uuid, name, description string) (*model.Job, error)
+	Recycle(uuid string, body *model.Job) (*model.Job, error)
 	Delete(uuid string) error
 	Drop() error
 }
@@ -60,7 +60,7 @@ type JobService interface {
 // ResultService represents a driver actor service interface.
 type ResultService interface {
 	// Get fetches a job result.
-	Get(uuid string) (*core.JobResult, error)
+	Get(uuid string) (*model.JobResult, error)
 	// Delete deletes a job result.
 	Delete(uuid string) error
 }
@@ -68,13 +68,13 @@ type ResultService interface {
 // PipelineService represents a driver actor service interface.
 type PipelineService interface {
 	// Create creates a new pipeline.
-	Create(name, description, runAt string, jobs []*core.Job) (*core.Pipeline, error)
+	Create(name, description, runAt string, jobs []*model.Job) (*model.Pipeline, error)
 	// Get fetches a pipeline.
-	Get(uuid string) (*core.Pipeline, error)
+	Get(uuid string) (*model.Pipeline, error)
 	// GetPipelines fetches all pipelines, optionally filters the pipelines by status.
-	GetPipelines(status string) ([]*core.Pipeline, error)
+	GetPipelines(status string) ([]*model.Pipeline, error)
 	// GetPipelineJobs fetches the jobs of a specified pipeline.
-	GetPipelineJobs(uuid string) ([]*core.Job, error)
+	GetPipelineJobs(uuid string) ([]*model.Job, error)
 	// Update updates a pipeline.
 	Update(uuid, name, description string) error
 	// Delete deletes a pipeline.
@@ -93,7 +93,7 @@ type WorkService interface {
 	Dispatch(w work.Work)
 
 	// CreateWork creates and return a new Work instance.
-	CreateWork(j *core.Job) work.Work
+	CreateWork(j *model.Job) work.Work
 
 	// Exec executes a work.
 	Exec(ctx context.Context, w work.Work) error

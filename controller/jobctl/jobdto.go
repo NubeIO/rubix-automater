@@ -1,13 +1,14 @@
 package jobctl
 
 import (
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 )
 
 // RequestBodyDTO is the data transfer object used for a job creation or update.
 type RequestBodyDTO struct {
 	Name               string                 `json:"name"`
 	Description        string                 `json:"description"`
+	Disable            bool                   `json:"disable"`
 	TaskName           string                 `json:"task_name"`
 	Timeout            int                    `json:"timeout"`
 	TaskParams         map[string]interface{} `json:"task_params"`
@@ -21,9 +22,9 @@ func NewRequestBodyDTO() *RequestBodyDTO {
 }
 
 // ResponseBodyDTO is the response data transfer object used for a job creation or update.
-type ResponseBodyDTO *core.Job
+type ResponseBodyDTO *model.Job
 
 // BuildResponseBodyDTO creates a new ResponseDTO.
-func BuildResponseBodyDTO(resource *core.Job) ResponseBodyDTO {
+func BuildResponseBodyDTO(resource *model.Job) ResponseBodyDTO {
 	return ResponseBodyDTO(resource)
 }

@@ -1,7 +1,7 @@
 package pipectl
 
 import (
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/controller/jobctl"
 )
 
@@ -19,9 +19,9 @@ func NewRequestBodyDTO() *RequestBodyDTO {
 }
 
 // ResponseBodyDTO is the response data transfer object used for a pipeline creation or update.
-type ResponseBodyDTO *core.Pipeline
+type ResponseBodyDTO *model.Pipeline
 
 // BuildResponseBodyDTO creates a new ResponseDTO.
-func BuildResponseBodyDTO(resource *core.Pipeline) ResponseBodyDTO {
+func BuildResponseBodyDTO(resource *model.Pipeline) ResponseBodyDTO {
 	return resource
 }

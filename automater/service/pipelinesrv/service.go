@@ -3,7 +3,7 @@ package pipelinesrv
 import (
 	"encoding/json"
 	"github.com/NubeIO/rubix-automater/automater"
-	"github.com/NubeIO/rubix-automater/automater/core"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
@@ -36,7 +36,7 @@ func New(
 }
 
 // Create creates a new pipeline.
-func (srv *pipeLineService) Create(name, description, runAt string, jobs []*core.Job) (*core.Pipeline, error) {
+func (srv *pipeLineService) Create(name, description, runAt string, jobs []*model.Job) (*model.Pipeline, error) {
 	pipelineUUID, err := srv.uuidGen.Make()
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*core
 		jobIDs = append(jobIDs, jobUUID)
 	}
 
-	jobsToCreate := make([]*core.Job, 0)
+	jobsToCreate := make([]*model.Job, 0)
 	for i, job := range jobs {
 		var runAtTime time.Time
 
@@ -70,9 +70,9 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*core
 		}
 
 		createdAt := srv.time.Now()
-		j := core.NewJob(
+		j := model.NewJob(
 			jobID, job.Name, job.TaskName, job.Description, pipelineUUID, nextJobID,
-			job.Timeout, &runAtTime, &createdAt, job.UsePreviousResults, job.TaskParams)
+			job.Timeout, &runAtTime, &createdAt, job.UsePreviousResults, job.Disable, job.TaskParams)
 
 		if err := j.Validate(srv.taskRepo); err != nil {
 			return nil, &apperrors.ResourceValidationErr{Message: err.Error()}
@@ -82,7 +82,7 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*core
 	}
 
 	createdAt := srv.time.Now()
-	p := core.NewPipeline(pipelineUUID, name, description, jobsToCreate, &createdAt)
+	p := model.NewPipeline(pipelineUUID, name, description, jobsToCreate, &createdAt)
 
 	if err := p.Validate(); err != nil {
 		return nil, &apperrors.ResourceValidationErr{Message: err.Error()}
@@ -97,7 +97,7 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*core
 }
 
 // Get fetches a pipeline.
-func (srv *pipeLineService) Get(uuid string) (*core.Pipeline, error) {
+func (srv *pipeLineService) Get(uuid string) (*model.Pipeline, error) {
 	p, err := srv.storage.GetPipeline(uuid)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (srv *pipeLineService) Get(uuid string) (*core.Pipeline, error) {
 }
 
 // GetPipelineJobs fetches the jobs of a specified pipeline.
-func (srv *pipeLineService) GetPipelineJobs(uuid string) ([]*core.Job, error) {
+func (srv *pipeLineService) GetPipelineJobs(uuid string) ([]*model.Job, error) {
 	_, err := srv.storage.GetPipeline(uuid)
 	if err != nil {
 		return nil, err
@@ -128,10 +128,10 @@ func (srv *pipeLineService) GetPipelineJobs(uuid string) ([]*core.Job, error) {
 }
 
 // GetPipelines fetches all pipelines, optionally filters the pipelines by status.
-func (srv *pipeLineService) GetPipelines(status string) ([]*core.Pipeline, error) {
-	var pipelineStatus core.JobStatus
+func (srv *pipeLineService) GetPipelines(status string) ([]*model.Pipeline, error) {
+	var pipelineStatus model.JobStatus
 	if status == "" {
-		pipelineStatus = core.Undefined
+		pipelineStatus = model.Undefined
 	} else {
 		err := json.Unmarshal([]byte("\""+strings.ToUpper(status)+"\""), &pipelineStatus)
 		if err != nil {
