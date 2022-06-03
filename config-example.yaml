@@ -1,0 +1,27 @@
+server:
+  protocol: http
+  http:
+    port: 8089
+job_queue:
+  option: redis
+  memory_job_queue:
+    capacity: 100
+  redis:
+    key_prefix: valet
+    min_idle_conns: 10
+    pool_size: 10
+worker_pool:
+  workers:
+  queue_capacity:
+scheduler:
+  storage_polling_interval: 60
+  job_queue_polling_interval: 5
+storage:
+  option: redis
+  redis:
+    url: localhost
+    key_prefix: valet
+    min_idle_conns: 10
+    pool_size: 10
+timeout_unit: second
+logging_format: text

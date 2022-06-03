@@ -1,5 +1,27 @@
 # rubix-automater
 
+## install
+```
+go mod tidy
+```
+```
+go run ./cmd/cmd main.go
+```
+
+### install redis
+https://redis.io/docs/getting-started/installation/install-redis-on-linux/
+
+### redis cli
+
+#### wipe the db
+https://redis.io/docs/getting-started/
+
+this will clear the db
+
+```
+redis-cli flushdb
+```
+
 ### Job
 
 The implementation uses the notion of `job`, which describes the work that needs to be done and carries information about the task that will run for the
