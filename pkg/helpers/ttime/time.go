@@ -1,10 +1,10 @@
-package intime
+package ttime
 
 import (
 	"time"
 )
 
-// Time represents intime.
+// Time represents ttime.
 type Time interface {
 	Now(notInUTC ...bool) time.Time
 }
@@ -18,6 +18,9 @@ func New() Time {
 }
 
 // Now returns a timestamp of the current datetime in UTC.
-func (rt *RealTime) Now(notInUTC ...bool) time.Time {
+func (rt *RealTime) Now(notUTC ...bool) time.Time {
+	if len(notUTC) > 0 {
+		return time.Now().UTC()
+	}
 	return time.Now()
 }

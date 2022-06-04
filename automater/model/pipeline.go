@@ -16,7 +16,7 @@ type Pipeline struct {
 
 	Status JobStatus `json:"status"`
 
-	// RunAt is the UTC timestamp indicating the intime for the pipeline to run.
+	// RunAt is the UTC timestamp indicating the ttime for the pipeline to run.
 	RunAt *time.Time `json:"run_at,omitempty"`
 
 	// CreatedAt is the UTC timestamp of the pipeline creation.

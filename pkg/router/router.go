@@ -77,7 +77,7 @@ func HandleStatus(jobQueue automater.JobQueue, storage automater.Storage) gin.Ha
 		res := map[string]interface{}{
 			"job_queue_healthy": jobQueue.CheckHealth(),
 			"storage_healthy":   storage.CheckHealth(),
-			"intime":            now,
+			"ttime":             now,
 		}
 		c.JSON(http.StatusOK, res)
 	}

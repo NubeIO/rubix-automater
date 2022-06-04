@@ -11,7 +11,7 @@ import (
 	"github.com/NubeIO/rubix-automater/automater/service/worksrv"
 	"github.com/NubeIO/rubix-automater/automater/setup"
 	"github.com/NubeIO/rubix-automater/pkg/config"
-	"github.com/NubeIO/rubix-automater/pkg/helpers/intime"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"os"
 	"os/signal"
@@ -64,13 +64,13 @@ func (v *autoMater) Run() {
 	v.logger.Infof("initialized [%s] as a job queue", cfg.JobQueue.Option)
 	storage := setup.StorageFactory(cfg.Storage)
 	v.logger.Infof("initialized [%s] as a storage", cfg.Storage.Option)
-	pipelineService := pipelinesrv.New(storage, taskRepo, uuid.New(), intime.New())
-	jobService := jobsrv.New(storage, taskRepo, uuid.New(), intime.New())
+	pipelineService := pipelinesrv.New(storage, taskRepo, uuid.New(), ttime.New())
+	jobService := jobsrv.New(storage, taskRepo, uuid.New(), ttime.New())
 	resultService := resultsrv.New(storage)
 
 	workPoolLogger := logger.NewLogger("workerpool", cfg.LoggingFormat)
 	workService := worksrv.New(
-		storage, taskRepo, intime.New(), cfg.TimeoutUnit,
+		storage, taskRepo, ttime.New(), cfg.TimeoutUnit,
 		cfg.WorkerPool.Workers, cfg.WorkerPool.QueueCapacity, workPoolLogger)
 	workService.Start()
 
@@ -78,7 +78,7 @@ func (v *autoMater) Run() {
 	defer cancel()
 
 	schedulerLogger := logger.NewLogger("scheduler", cfg.LoggingFormat)
-	schedulerService := schedulersrv.New(jobQueue, storage, workService, intime.New(), schedulerLogger)
+	schedulerService := schedulersrv.New(jobQueue, storage, workService, ttime.New(), schedulerLogger)
 	schedulerService.Schedule(ctx, time.Duration(cfg.Scheduler.StoragePollingInterval)*cfg.TimeoutUnit)
 	schedulerService.Dispatch(ctx, time.Duration(cfg.Scheduler.JobQueuePollingInterval)*cfg.TimeoutUnit)
 

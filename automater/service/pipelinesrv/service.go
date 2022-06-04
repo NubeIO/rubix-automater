@@ -6,7 +6,7 @@ import (
 	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
-	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
+	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"strings"
 	"time"

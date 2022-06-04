@@ -7,8 +7,10 @@ import (
 	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
-	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/timeconversion"
+	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
+	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"strings"
 	"time"
 )
@@ -118,14 +120,47 @@ func (srv *jobService) Update(uuid, name, description string) (*model.Job, error
 
 // Recycle reuse a job.
 func (srv *jobService) Recycle(uuid string, body *model.Job) (*model.Job, error) {
+	fmt.Println(22222, uuid)
 	j, err := srv.storage.GetJob(uuid)
 	if err != nil {
 		return nil, err
 	}
-	createdAt := srv.time.Now()
-	body.UUID = j.UUID
-	body.CreatedAt = &createdAt
-	return srv.storage.UpdateJob(uuid, body)
+	fmt.Println(22222)
+	pprint.PrintJOSN(j)
+	fmt.Println(22222)
+	fmt.Println(4444)
+	pprint.PrintJOSN(body)
+	fmt.Println(4444)
+	var nextRunTime time.Time
+	//if the job was completed and is enabled as cron
+	if j.JobOptions != nil {
+		if j.CompletedAt != nil {
+			nextRunTime, err = timeconversion.AdjustTime(*j.CompletedAt, j.JobOptions.RunOnInterval)
+			if err != nil {
+				return nil, err
+			}
+			j.RunAt = &nextRunTime
+		}
+	}
+
+	now := srv.time.Now()
+	if j.RunAt != nil {
+		//runAtTime, err := time.Parse(time.RFC3339Nano, body.RunAt.String())
+		//if err != nil {
+		//	return nil, &apperrors.ParseTimeErr{Message: err.Error()}
+		//}
+		//body.RunAt = &runAtTime
+	} else {
+		//body.RunAt = &now
+	}
+
+	j.Status = model.Pending
+	j.CreatedAt = &now
+	j.LastRecycleCreation = &now
+	j.ScheduledAt = nil
+	j.StartedAt = nil
+	j.CompletedAt = nil
+	return srv.storage.Recycle(uuid, j)
 }
 
 // Delete deletes a job.

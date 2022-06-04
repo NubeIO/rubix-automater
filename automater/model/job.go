@@ -7,9 +7,27 @@ import (
 	"time"
 )
 
+/*
+Recycle job
+if the job is to be marked as completed and the job is set to be a CRON job then do the following
+
+- set state back to IN_PROGRESS
+- bump the Job.RunCount up one
+- reset the Job.RunAt time to completed plus the next interval eg: completed at 3pm and interval is 15min then set RunAt=03:15
+
+Rest on fail
+- if the job has failed and the OnFailRetry is true
+- bump the Job.FailCount up one
+- reset the Job.RunAt time to completed plus the next interval eg: completed at 3pm and interval is 15min then set RunAt=03:15
+
+*/
+
 type JobOptions struct {
-	RunOnInterval string `json:"run_on_interval,omitempty"`
-	OnErrorRetry  bool   `json:"on_error_retry"`
+	EnableInterval    bool       `json:"enable_interval"`
+	RunOnInterval     string     `json:"run_on_interval"`
+	EnableOnFailRetry bool       `json:"enable_on_fail_retry"`
+	HowTimesToRetry   bool       `json:"how_times_to_retry"`
+	OnFailRetryDelay  *time.Time `json:"birth,omitempty"`
 }
 
 // Job represents an async tasks.
@@ -44,7 +62,7 @@ type Job struct {
 	// TaskParams are the required parameters for the tasks assigned to the specific job.
 	TaskParams map[string]interface{} `json:"task_params,omitempty"`
 
-	// Timeout is the intime in seconds after which the job tasks will be interrupted.
+	// Timeout is the ttime in seconds after which the job tasks will be interrupted.
 	Timeout int `json:"timeout_in_sec,omitempty"`
 
 	Description string `json:"description,omitempty"`
@@ -53,17 +71,19 @@ type Job struct {
 	Status JobStatus `json:"status"`
 
 	FailureReason string `json:"failure_reason,omitempty"`
-	// RunAt is the UTC timestamp indicating the intime for the job to run.
+	// RunAt is the UTC timestamp indicating the ttime for the job to run.
 	RunAt *time.Time `json:"run_at,omitempty"`
 	// RunAt is like run every 15min
-	// ScheduledAt is the UTC timestamp indicating the intime that the job got scheduled.
-	ScheduledAt *time.Time `json:"scheduled_at,omitempty"`
+	// ScheduledAt is the UTC timestamp indicating the ttime that the job got scheduled.
+	ScheduledAt *time.Time `json:"scheduled_at"`
 	// CreatedAt is the UTC timestamp of the job creation.
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// StartedAt is the UTC timestamp of the moment the job started.
 	StartedAt *time.Time `json:"started_at,omitempty"`
 	// CompletedAt is the UTC timestamp of the moment the job finished.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	// LastRecyclerCreation last time the job was recycled at
+	LastRecycleCreation *time.Time `json:"last_recycle_creation,omitempty"`
 	// Duration indicates how much the job took to complete.
 	Duration *time.Duration `json:"duration,omitempty"`
 }
@@ -111,6 +131,11 @@ func (j *Job) MarkScheduled(scheduledAt *time.Time) {
 func (j *Job) MarkCompleted(completedAt *time.Time) {
 	j.Status = Completed
 	j.CompletedAt = completedAt
+}
+
+// MarkRecycle will set the job back to pending
+func (j *Job) MarkRecycle() {
+	j.Status = InProgress
 }
 
 // MarkFailed updates the status and timestamp at the moment the job failed.

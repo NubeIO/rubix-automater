@@ -33,7 +33,7 @@ func PingHost(args ...interface{}) (interface{}, error) {
 func runPingHost(url string, port int, countSetting int) (*PingResponse, error) {
 	resp := &PingResponse{}
 	failCount := 0
-	for i := 1; i <= 2; i++ { //ping 3 times
+	for i := 1; i <= 1; i++ { //ping 3 times
 		if ping(url, port) {
 			logrus.Infoln("run task ping host ok:", fmt.Sprintf("%s:%d", url, port))
 		} else {

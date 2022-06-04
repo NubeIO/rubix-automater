@@ -16,6 +16,7 @@ type Storage interface {
 	GetDueJobs() ([]*model.Job, error)
 	GetJobsByPipelineID(pipelineID string) ([]*model.Job, error)
 	UpdateJob(uuid string, j *model.Job) (*model.Job, error)
+	Recycle(uuid string, body *model.Job) (*model.Job, error)
 	DeleteJob(uuid string) error
 	CreateJobResult(result *model.JobResult) error
 	GetJobResult(jobID string) (*model.JobResult, error)

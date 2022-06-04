@@ -7,7 +7,8 @@ import (
 	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/automater/service/worksrv/work"
-	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
+	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
+	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"sync"
 	"time"
 
@@ -106,7 +107,7 @@ func (srv *workService) Stop() {
 func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	// Do not let the go-routines wait for result in case of early exit.
 	defer close(w.Result)
-	srv.logger.Info("ExecJobWork", w.Job.Name)
+	srv.logger.Info("executes the job worker", w.Job.Name)
 
 	startedAt := srv.time.Now()
 	w.Job.MarkStarted(&startedAt)
@@ -145,9 +146,20 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 			w.Job.MarkCompleted(&completedAt)
 		}
 	}
-	if _, err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
-		return err
+	fmt.Println(111111)
+	pprint.PrintJOSN(w.Job)
+	if w.Job.JobOptions.EnableInterval {
+
+		fmt.Println(111111, w.Job.JobOptions.EnableInterval, w.Job.UUID)
+		if _, err := srv.storage.Recycle(w.Job.UUID, w.Job); err != nil {
+			return err
+		}
+	} else {
+		if _, err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
+			return err
+		}
 	}
+
 	w.Result <- jobResult
 
 	return nil
@@ -212,15 +224,25 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		}
 		// Reset timeout.
 		cancel()
-
-		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
-			return err
-		}
-		if p.Status == model.Failed || p.Status == model.Completed {
-			if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
+		fmt.Println(111111)
+		pprint.PrintJOSN(job)
+		if job.JobOptions.EnableInterval {
+			fmt.Println(111111, job.JobOptions.EnableInterval)
+			if _, err := srv.storage.Recycle(job.UUID, job); err != nil {
 				return err
 			}
+
+		} else {
+			if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
+				return err
+			}
+			if p.Status == model.Failed || p.Status == model.Completed {
+				if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
+					return err
+				}
+			}
 		}
+
 		w.Result <- jobResult
 
 		// Stop the pipeline execution on failure.

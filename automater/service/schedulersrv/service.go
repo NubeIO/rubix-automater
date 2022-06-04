@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
-	intime "github.com/NubeIO/rubix-automater/pkg/helpers/intime"
+	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -50,8 +50,8 @@ func (srv *schedulerService) Dispatch(ctx context.Context, duration time.Duratio
 				return
 			case <-ticker.C:
 				j := srv.jobQueue.Pop()
-				srv.logger.Info("dispatch no job to run")
 				if j == nil {
+					srv.logger.Info("dispatch no job to run")
 					continue
 				}
 				srv.logger.Info("dispatch a new job uuid:", j.UUID)
@@ -76,21 +76,21 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 			select {
 			case <-ctx.Done():
 				ticker.Stop()
-				srv.logger.Info("exiting...")
+				srv.logger.Info("exiting schedule...")
 				return
 			case <-ticker.C:
 				dueJobs, err := srv.storage.GetDueJobs()
-				fmt.Println("GetDueJobs", dueJobs)
+				srv.logger.Infoln("schedule loop job count:", len(dueJobs))
 				if err != nil {
 					srv.logger.Errorf("could not get due jobs from storage: %s", err)
 					continue
 				}
 				for _, j := range dueJobs {
 					if j.Disable {
-						srv.logger.Infoln("JOB Is Disable name:", j.Name)
+						srv.logger.Infoln("schedule JOB Is Disable name:", j.Name)
 						continue
 					} else {
-						srv.logger.Infoln("JOB IS Not Disable", j.Name)
+						srv.logger.Infoln("schedule JOB IS Not Disable", j.Name)
 					}
 					if j.BelongsToPipeline() {
 						for job := j; job.HasNext(); job = job.Next {

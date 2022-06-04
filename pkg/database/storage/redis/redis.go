@@ -6,6 +6,8 @@ import (
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/timeconversion"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"sort"
 	"time"
 
@@ -117,6 +119,82 @@ func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*model.Job, error) {
 	}
 
 	return p.Jobs, nil
+}
+
+// Recycle updates a job to the storage.
+func (rs *Redis) Recycle(uuid string, j *model.Job) (*model.Job, error) {
+	var err error
+
+	var nextRunTime time.Time
+	//if the job was completed and is enabled as cron
+	if j.JobOptions != nil {
+		if j.CompletedAt != nil {
+			nextRunTime, err = timeconversion.AdjustTime(*j.CompletedAt, j.JobOptions.RunOnInterval)
+			if err != nil {
+				return nil, err
+			}
+			j.RunAt = &nextRunTime
+		}
+	}
+	now := ttime.New().Now()
+	if j.RunAt != nil {
+		//runAtTime, err := time.Parse(time.RFC3339Nano, body.RunAt.String())
+		//if err != nil {
+		//	return nil, &apperrors.ParseTimeErr{Message: err.Error()}
+		//}
+		//body.RunAt = &runAtTime
+	} else {
+		//body.RunAt = &now
+	}
+
+	j.Status = model.Pending
+	j.CreatedAt = &now
+	j.LastRecycleCreation = &now
+	j.ScheduledAt = nil
+	j.StartedAt = nil
+	j.CompletedAt = nil
+
+	err = rs.Watch(ctx, func(tx *redis.Tx) error {
+		key := rs.getRedisKeyForJob(uuid)
+		value, err := json.Marshal(j)
+		if err != nil {
+			return err
+		}
+
+		err = rs.Set(ctx, key, value, 0).Err()
+		if err != nil {
+			return err
+		}
+		if j.BelongsToPipeline() {
+			// Sync pipeline job.
+			pipelineKey := rs.getRedisKeyForPipeline(j.PipelineID)
+			val, err := rs.Get(ctx, pipelineKey).Bytes()
+			if err != nil {
+				return err
+			}
+
+			var p *model.Pipeline
+			err = json.Unmarshal(val, &p)
+			if err != nil {
+				return err
+			}
+			for i, job := range p.Jobs {
+				if job.UUID == j.UUID {
+					p.Jobs[i] = j
+				}
+			}
+			err = rs.UpdatePipeline(p.UUID, p)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	job, err := rs.GetJob(uuid)
+	if err != nil {
+		return nil, err
+	}
+	return job, nil
 }
 
 // UpdateJob updates a job to the storage.
