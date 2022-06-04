@@ -7,11 +7,24 @@ import (
 	"time"
 )
 
+type JobOptions struct {
+	RunOnInterval string `json:"run_on_interval,omitempty"`
+	OnErrorRetry  bool   `json:"on_error_retry"`
+}
+
 // Job represents an async tasks.
 type Job struct {
 	UUID    string `json:"uuid"`
 	Name    string `json:"name"`
 	Disable bool   `json:"disable"`
+	// Birth is when the job was created
+	Birth *time.Time `json:"birth,omitempty"`
+
+	//stats on run and error count
+	RunCount  int `json:"run_count"`
+	FailCount int `json:"fail_count"`
+
+	JobOptions *JobOptions `json:"job_options"`
 
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
@@ -42,6 +55,7 @@ type Job struct {
 	FailureReason string `json:"failure_reason,omitempty"`
 	// RunAt is the UTC timestamp indicating the intime for the job to run.
 	RunAt *time.Time `json:"run_at,omitempty"`
+	// RunAt is like run every 15min
 	// ScheduledAt is the UTC timestamp indicating the intime that the job got scheduled.
 	ScheduledAt *time.Time `json:"scheduled_at,omitempty"`
 	// CreatedAt is the UTC timestamp of the job creation.
@@ -58,7 +72,7 @@ type Job struct {
 func NewJob(
 	uuid, name, taskName, description, pipelineID, nextJobID string,
 	timeout int, runAt *time.Time, createdAt *time.Time,
-	usePreviousResults bool, disable bool, taskParams map[string]interface{}) *Job {
+	usePreviousResults bool, disable bool, options *JobOptions, taskParams map[string]interface{}) *Job {
 
 	if runAt.IsZero() {
 		runAt = nil
@@ -73,6 +87,7 @@ func NewJob(
 		Timeout:            timeout,
 		Description:        description,
 		Disable:            disable,
+		JobOptions:         options,
 		TaskParams:         taskParams,
 		Status:             Pending,
 		RunAt:              runAt,

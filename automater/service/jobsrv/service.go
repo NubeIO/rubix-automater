@@ -39,10 +39,10 @@ func New(
 // Create creates a new job.
 func (srv *jobService) Create(
 	name, taskName, description, runAt string,
-	timeout int, disable bool, taskParams map[string]interface{}) (*model.Job, error) {
+	timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error) {
 	var runAtTime time.Time
 
-	uuid, err := srv.uuidGen.Make("job")
+	id, err := srv.uuidGen.Make("job")
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +54,15 @@ func (srv *jobService) Create(
 	}
 	createdAt := srv.time.Now()
 	j := model.NewJob(
-		uuid, name, taskName, description,
+		id, name, taskName, description,
 		"", "", timeout, &runAtTime,
-		&createdAt, false, disable, taskParams)
+		&createdAt, false, disable, options, taskParams)
 
 	if err := j.Validate(srv.taskRepo); err != nil {
 		return nil, &apperrors.ResourceValidationErr{Message: err.Error()}
 	}
+	birth := srv.time.Now()
+	j.Birth = &birth
 
 	if err := srv.storage.CreateJob(j); err != nil {
 		return nil, err

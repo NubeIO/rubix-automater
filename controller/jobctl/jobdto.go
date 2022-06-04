@@ -11,6 +11,7 @@ type RequestBodyDTO struct {
 	Disable            bool                   `json:"disable"`
 	TaskName           string                 `json:"task_name"`
 	Timeout            int                    `json:"timeout"`
+	Options            *model.JobOptions      `json:"options"`
 	TaskParams         map[string]interface{} `json:"task_params"`
 	RunAt              string                 `json:"run_at"`
 	UsePreviousResults bool                   `json:"use_previous_results"`

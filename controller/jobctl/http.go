@@ -31,7 +31,7 @@ func (hdl *JobHTTPHandler) Create(c *gin.Context) {
 	c.BindJSON(&body)
 
 	j, err := hdl.jobService.Create(
-		body.Name, body.TaskName, body.Description, body.RunAt, body.Timeout, body.Disable, body.TaskParams)
+		body.Name, body.TaskName, body.Description, body.RunAt, body.Timeout, body.Disable, body.Options, body.TaskParams)
 	if err != nil {
 		switch err.(type) {
 		case *apperrors.ResourceValidationErr:
