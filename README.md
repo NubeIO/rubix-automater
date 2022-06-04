@@ -94,7 +94,7 @@ if `run_at"` is `nil` then it will just run the job once
 ```json
 {
   "name": "instal a rubix app",
-  "description": "first pubsub if the device is offline then try and install the app",
+  "description": "first testing if the device is offline then try and install the app",
   "jobs": [
     {
       "name": "pingHost",

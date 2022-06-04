@@ -151,17 +151,7 @@ func (cfg *Config) setJobQueueConfig() error {
 	}
 	if cfg.JobQueue.Option == "redis" {
 		url := redisURL
-		//if url == "" {
-		//	return errors.New("Redis URL not provided")
-		//}
 		cfg.JobQueue.Redis.URL = url
-
-		if cfg.JobQueue.Redis.PoolSize == 0 {
-			cfg.JobQueue.Redis.PoolSize = 10
-		}
-		if cfg.JobQueue.Redis.MinIdleConns == 0 {
-			cfg.JobQueue.Redis.MinIdleConns = 10
-		}
 	}
 	return nil
 }

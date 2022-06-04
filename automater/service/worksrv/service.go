@@ -7,6 +7,7 @@ import (
 	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/automater/service/worksrv/work"
+	"github.com/NubeIO/rubix-automater/pkg/database/storage/redis"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"sync"
 	"time"
@@ -146,7 +147,10 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 		}
 	}
 	if w.Job.JobOptions.EnableInterval {
-		if _, err := srv.storage.CreateTransaction(w.Job.UUID, w.Job); err != nil {
+		if err := srv.storage.Pub(redis.TopicJob, w.Job); err != nil {
+			return err
+		}
+		if _, err := srv.storage.CreateTransaction(w.Job); err != nil {
 			w.Job.MarkPending() //rest back to pending
 			if _, err := srv.storage.Recycle(w.Job.UUID, w.Job); err != nil {
 				return err

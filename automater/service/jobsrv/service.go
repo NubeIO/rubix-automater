@@ -158,7 +158,7 @@ func (srv *jobService) Delete(uuid string) error {
 		return err
 	}
 	if j.BelongsToPipeline() {
-		// TODO: Add a pubsub case for this scenario.
+		// TODO: Add a testing case for this scenario.
 		return &apperrors.CannotDeletePipelineJobErr{
 			Message: fmt.Sprintf(
 				`job with UUID: %s can not be deleted because it belongs 

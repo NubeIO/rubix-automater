@@ -22,6 +22,17 @@ func New(
 	url string, poolSize, minIdleConns int,
 	keyPrefix string, logger *logrus.Logger) *Client {
 
+	if url == "" {
+		url = "redis://localhost:6379"
+	}
+
+	if poolSize == 0 {
+		poolSize = 10
+	}
+	if minIdleConns == 0 {
+		minIdleConns = 10
+	}
+
 	rs := new(Client)
 
 	rs.KeyPrefix = keyPrefix

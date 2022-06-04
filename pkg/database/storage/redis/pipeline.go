@@ -2,6 +2,7 @@ package redis
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"github.com/go-redis/redis/v8"
@@ -65,7 +66,7 @@ func (rs *Redis) GetPipeline(uuid string) (*model.Pipeline, error) {
 // GetPipelines fetches all pipelines from the storage, optionally filters the pipelines by status.
 func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error) {
 	var keys []string
-	key := rs.GetRedisPrefixedKey("pipeline:*")
+	key := rs.GetRedisPrefixedKey(fmt.Sprintf("%s:*", pipeline))
 	iter := rs.Scan(ctx, 0, key, 0).Iterator()
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())
@@ -74,7 +75,7 @@ func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 		return nil, err
 	}
 
-	pipelines := []*model.Pipeline{}
+	var pipelines []*model.Pipeline
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {

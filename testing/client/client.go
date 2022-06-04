@@ -20,7 +20,7 @@ var redisClient = redis.NewClient(&redis.Options{
 })
 
 func main() {
-	subscriber := redisClient.Subscribe(ctx, "send-user-data")
+	subscriber := redisClient.Subscribe(ctx, "test")
 
 	user := User{}
 
@@ -30,11 +30,13 @@ func main() {
 			panic(err)
 		}
 
+		fmt.Println("Received message from "+msg.Channel+" channel.", "data", msg.String())
 		if err := json.Unmarshal([]byte(msg.Payload), &user); err != nil {
-			panic(err)
+			//panic(err)
+		} else {
+			fmt.Println("Received message from " + msg.Channel + " channel.")
+			fmt.Printf("%+v\n", user)
 		}
 
-		fmt.Println("Received message from " + msg.Channel + " channel.")
-		fmt.Printf("%+v\n", user)
 	}
 }

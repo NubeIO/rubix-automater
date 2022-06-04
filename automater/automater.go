@@ -25,7 +25,7 @@ type Storage interface {
 	CreatePipeline(p *model.Pipeline) error
 	GetPipeline(uuid string) (*model.Pipeline, error)
 
-	CreateTransaction(jobID string, job *model.Job) (*model.Transaction, error)
+	CreateTransaction(job *model.Job) (*model.Transaction, error)
 	GetTransactions(status model.JobStatus) ([]*model.Transaction, error)
 
 	GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
@@ -36,6 +36,9 @@ type Storage interface {
 
 	// WipeDB wipes the DB
 	WipeDB() error
+
+	// Pub redis publish message
+	Pub(channel string, message interface{}) error
 }
 
 // JobQueue represents a driven actor queue interface.

@@ -7,19 +7,15 @@ import (
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
-	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"github.com/go-redis/redis/v8"
 	"sort"
 )
 
 // CreateTransaction adds a new trans result to the storage.
-func (rs *Redis) CreateTransaction(jobId string, job *model.Job) (*model.Transaction, error) {
+func (rs *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error) {
 	id, _ := uuid.New().Make("tra")
 	key := rs.getRedisKeyForTransaction(id)
 	now := ttime.New().Now()
-	fmt.Println(111)
-	pprint.PrintJOSN(job)
-	fmt.Println(111)
 	trans := &model.Transaction{
 		UUID:          id,
 		JobID:         job.UUID,
@@ -41,16 +37,25 @@ func (rs *Redis) CreateTransaction(jobId string, job *model.Job) (*model.Transac
 	}
 	transaction, err := rs.GetTransaction(key)
 	if err != nil {
-		//return nil, err
+		return nil, err
 	}
-
 	return transaction, nil
+}
+
+// DeleteTransaction deletes a trans from the storage.
+func (rs *Redis) DeleteTransaction(uuid string) error {
+	key := rs.getRedisKeyForTransaction(uuid)
+	_, err := rs.Del(ctx, key).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetTransactions fetches all trans from the storage, optionally filters the jobs by status.
 func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, error) {
 	var keys []string
-	key := rs.GetRedisPrefixedKey("transaction:*")
+	key := rs.GetRedisPrefixedKey(fmt.Sprintf("%s:*", transaction))
 	iter := rs.Scan(ctx, 0, key, 0).Iterator()
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())
@@ -58,7 +63,6 @@ func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, 
 	if err := iter.Err(); err != nil {
 		return nil, err
 	}
-
 	var jobs []*model.Transaction
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
@@ -70,15 +74,29 @@ func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, 
 			return nil, err
 		}
 		jobs = append(jobs, j)
-		//if status == model.Undefined || j.Status == status {
-		//	jobs = append(jobs, j)
-		//}
+		if status == model.Undefined || j.Status == status {
+			jobs = append(jobs, j)
+		}
 	}
-
 	// ORDER BY created_at ASC
 	sort.Slice(jobs, func(i, j int) bool {
 		return jobs[i].CreatedAt.Before(*jobs[j].CreatedAt)
 	})
+	return jobs, nil
+}
+
+// GetTransactionsByJob fetches all trans from the storage by job
+func (rs *Redis) GetTransactionsByJob(jobId string) ([]*model.Transaction, error) {
+	var jobs []*model.Transaction
+	transactions, err := rs.GetTransactions(model.Undefined)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range transactions {
+		if t.JobID == jobId {
+			jobs = append(jobs, t)
+		}
+	}
 	return jobs, nil
 }
 

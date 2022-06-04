@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
 	rs "github.com/NubeIO/rubix-automater/pkg/redis"
 )
@@ -31,18 +32,25 @@ func (rs *Redis) WipeDB() error {
 	return nil
 }
 
+const (
+	pipeline    = "pipeline"
+	job         = "job"
+	transaction = "transaction"
+	jobresult   = "jobresult"
+)
+
 func (rs *Redis) getRedisKeyForPipeline(id string) string {
-	return rs.GetRedisPrefixedKey("pipeline:" + id)
+	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", pipeline, id))
 }
 
 func (rs *Redis) getRedisKeyForJob(id string) string {
-	return rs.GetRedisPrefixedKey("job:" + id)
+	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", job, id))
 }
 
 func (rs *Redis) getRedisKeyForTransaction(id string) string {
-	return rs.GetRedisPrefixedKey("transaction:" + id)
+	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", transaction, id))
 }
 
 func (rs *Redis) getRedisKeyForJobResult(id string) string {
-	return rs.GetRedisPrefixedKey("jobresult:" + id)
+	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", jobresult, id))
 }

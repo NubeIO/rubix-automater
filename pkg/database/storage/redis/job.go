@@ -220,7 +220,17 @@ func (rs *Redis) UpdateJob(uuid string, j *model.Job) (*model.Job, error) {
 // DeleteJob deletes a job from the storage.
 func (rs *Redis) DeleteJob(uuid string) error {
 	key := rs.getRedisKeyForJob(uuid)
-	_, err := rs.Del(ctx, key).Result()
+	byJob, err := rs.GetTransactionsByJob(uuid)
+	if err != nil {
+		return err
+	}
+	for _, t := range byJob {
+		err := rs.DeleteTransaction(t.UUID)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = rs.Del(ctx, key).Result()
 	if err != nil {
 		return err
 	}
@@ -239,7 +249,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 		return nil, err
 	}
 
-	dueJobs := []*model.Job{}
+	var dueJobs []*model.Job
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {

@@ -45,7 +45,7 @@ func (hdl *TransactionHTTPHandler) GetTransactions(c *gin.Context) {
 		}
 	}
 	fmt.Println(jobStatus)
-	jobStatus = model.Completed
+	//jobStatus = model.Completed
 
 	out, err := hdl.storage.GetTransactions(jobStatus)
 	if err != nil {
