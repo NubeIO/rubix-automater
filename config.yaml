@@ -3,7 +3,7 @@ server:
   http:
     port: 8089
 job_queue:
-  option: memory
+  option: redis
   memory_job_queue:
     capacity: 100
   redis:

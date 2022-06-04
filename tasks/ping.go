@@ -15,31 +15,39 @@ type PingParams struct {
 	ErrorOnFailSetting int    `json:"errorOnFailSetting,omitempty"` //consider failed if count is > then the amount of times the ping failed
 }
 
+type PingResponse struct {
+	Ok    bool  `json:"ok"`
+	Error error `json:"error"`
+}
+
 func PingHost(args ...interface{}) (interface{}, error) {
 	params := &PingParams{}
 	var resultsMetadata string
 	automater.DecodeTaskParams(args, params)
 	automater.DecodePreviousJobResults(args, &resultsMetadata)
 	time.Sleep(1 * time.Second)
-	metaData := runPingHost(params.URL, params.Port, params.ErrorOnFailSetting)
-	return metaData, metaData
+	metaData, err := runPingHost(params.URL, params.Port, params.ErrorOnFailSetting)
+	return metaData, err
 }
 
-func runPingHost(url string, port int, countSetting int) error {
+func runPingHost(url string, port int, countSetting int) (*PingResponse, error) {
+	resp := &PingResponse{}
 	failCount := 0
-	for i := 1; i <= 3; i++ { //ping 3 times
+	for i := 1; i <= 2; i++ { //ping 3 times
 		if ping(url, port) {
 			logrus.Infoln("run task ping host ok:", fmt.Sprintf("%s:%d", url, port))
 		} else {
 			failCount++
 			logrus.Infoln("run task ping host:", fmt.Sprintf("%s:%d", url, port), " fail count:", failCount)
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
-	if failCount >= countSetting {
-		return errors.New(fmt.Sprintf("ping fail count:%d was grater then the allowable ping fail count %d", failCount, countSetting))
+	if failCount >= 1 {
+		resp.Error = errors.New(fmt.Sprintf("ping fail count:%d was grater then the allowable ping fail count %d", failCount, countSetting))
+		return resp, resp.Error
 	}
-	return nil
+	resp.Ok = true
+	return resp, resp.Error
 }
 
 func ping(url string, port int) (found bool) {

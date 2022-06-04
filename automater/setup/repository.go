@@ -3,14 +3,10 @@ package setup
 import (
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/pkg/config"
-	"github.com/NubeIO/rubix-automater/pkg/database/storage/memorydb"
 	"github.com/NubeIO/rubix-automater/pkg/database/storage/redis"
 )
 
 func StorageFactory(cfg config.Storage) automater.Storage {
-	if cfg.Option == "memory" {
-		return memorydb.New()
-	}
 	if cfg.Option == "redis" {
 		return redis.New(
 			cfg.Redis.URL, cfg.Redis.PoolSize, cfg.Redis.MinIdleConns, cfg.Redis.KeyPrefix)

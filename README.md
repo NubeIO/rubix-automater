@@ -82,41 +82,44 @@ for your tasks to run by including them in the request body. Optionally, you can
 a `bash`-like command pipeline. Pipelines can also be scheduled for execution at a specific time, by adding `run_at` field to the request payload
 just like it's done with the jobs.
 
+
+The example below will in steps
+
+- try and ping the host (if ping failed it will skip the installation app, but only if this is true `use_previous_results`)
+- if it found the host install a new app
+
+
+if `run_at"` is `nil` then it will just run the job once
+
 ```json
 {
-    "name": "a scheduled pipeline",
-    "description": "what this pipeline is all about",
-    "run_at": "2022-06-06T15:04:05.999",
-    "jobs": [
-        {
-          "name": "run ping",
-          "description": "run a ping",
-          "task_name": "pinghost",
-          "task_params": {
-            "url": "nube-io.com",
-            "port": 443,
-            "errorOnFailSetting": 10
-          }
-        },
-        {
-            "name": "a second job",
-            "description": "some job description",
-            "task_name": "anothertask",
-            "task_params": {
-                "url": "www.some-fake-url.com"
-            },
-            "use_previous_results": true,
-            "timeout": 10
-        },
-        {
-            "name": "the last job",
-            "description": "some job description",
-            "task_name": "dummytask",
-            "task_params": {
-                "url": "www.some-fake-url.com"
-            },
-            "use_previous_results": true
-        }
-    ]
+  "name": "instal a rubix app",
+  "description": "first test if the device is offline then try and install the app",
+  "jobs": [
+    {
+      "name": "pingHost",
+      "description": "host ping",
+      "task_name": "pingHost",
+      "task_params": {
+        "url": "0.0.0.0",
+        "port": 8090,
+        "errorOnFailSetting": 10
+      }
+    },
+    {
+      "name": "installApp",
+      "description": "try and install a rubix-app",
+      "task_name": "installApp",
+      "task_params": {
+        "url": "0.0.0.0",
+        "port": 8090,
+        "AppName": "flow-framework",
+        "version": "latest",
+        "token": "GIT TOKEN"
+      },
+      "use_previous_results": true,
+      "timeout": 120
+    }
+  ]
 }
 ```

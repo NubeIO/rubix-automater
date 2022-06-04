@@ -6,7 +6,7 @@ import (
 )
 
 func Test_ping(t *testing.T) {
-	found := ping("nube-io.com", 443)
+	found := ping("0.0.0.0", 8090)
 	fmt.Println(found)
 
 }

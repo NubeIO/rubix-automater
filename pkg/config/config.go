@@ -2,11 +2,10 @@ package config
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"runtime"
 	"time"
-
-	"gopkg.in/yaml.v2"
 )
 
 var redisURL = "redis://localhost:6379"
@@ -21,16 +20,13 @@ var (
 		"json": true,
 	}
 	validStorageOptions = map[string]bool{
-		"memory": true,
-		"redis":  true,
+		"redis": true,
 	}
 	validJobQueueOptions = map[string]bool{
-		"memory": true,
-		"redis":  true,
+		"redis": true,
 	}
 	validProtocolOptions = map[string]bool{
 		"http": true,
-		"grpc": true,
 	}
 )
 
@@ -41,10 +37,6 @@ type HTTP struct {
 type Server struct {
 	Protocol string `yaml:"protocol"`
 	HTTP     HTTP   `yaml:"http"`
-}
-
-type MemoryJobQueue struct {
-	Capacity int `yaml:"capacity"`
 }
 
 type QueueParams struct {
@@ -70,16 +62,9 @@ type PublishParams struct {
 	Immediate  bool   `yaml:"immediate"`
 }
 
-type RabbitMQ struct {
-	QueueParams   QueueParams   `yaml:"queue_params"`
-	ConsumeParams ConsumeParams `yaml:"consume_params"`
-	PublishParams PublishParams `yaml:"publish_params"`
-}
-
 type JobQueue struct {
-	Option         string         `yaml:"option"`
-	MemoryJobQueue MemoryJobQueue `yaml:"memory_job_queue"`
-	Redis          Redis          `yaml:"redis"`
+	Option string `yaml:"option"`
+	Redis  Redis  `yaml:"redis"`
 }
 
 type WorkerPool struct {
@@ -163,11 +148,6 @@ func (cfg *Config) setServerConfig() error {
 func (cfg *Config) setJobQueueConfig() error {
 	if _, ok := validJobQueueOptions[cfg.JobQueue.Option]; !ok {
 		return fmt.Errorf("%s is not a valid job queue option, valid options: %v", cfg.JobQueue.Option, validJobQueueOptions)
-	}
-	if cfg.JobQueue.Option == "memory" {
-		if cfg.JobQueue.MemoryJobQueue.Capacity == 0 {
-			cfg.JobQueue.MemoryJobQueue.Capacity = 100
-		}
 	}
 	if cfg.JobQueue.Option == "redis" {
 		url := redisURL

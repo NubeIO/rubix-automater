@@ -1,6 +1,6 @@
 package tasks
 
 const (
-	PingHostName  = "pinghost"
-	DummyTaskName = "dummytask"
+	PingHostTask   = "pingHost"
+	InstallAppTask = "installApp"
 )
