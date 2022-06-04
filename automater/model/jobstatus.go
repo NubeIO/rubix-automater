@@ -17,6 +17,7 @@ const (
 	Completed                   // 4
 	Failed                      // 5
 
+	UNDERFINED = "UNDERFINED"
 	PENDING    = "PENDING"
 	SCHEDULED  = "SCHEDULED"
 	INPROGRESS = "IN_PROGRESS"
@@ -26,7 +27,11 @@ const (
 
 // String converts the type to a string.
 func (js JobStatus) String() string {
-	return [...]string{PENDING, SCHEDULED, INPROGRESS, COMPLETED, FAILED}[js-1]
+	if js != 0 {
+		return [...]string{PENDING, SCHEDULED, INPROGRESS, COMPLETED, FAILED}[js-1]
+	}
+	return UNDERFINED
+
 }
 
 // Index returns the integer representation of a JobStatus.

@@ -35,8 +35,6 @@ type Job struct {
 	UUID    string `json:"uuid"`
 	Name    string `json:"name"`
 	Disable bool   `json:"disable"`
-	// Birth is when the job was created
-	Birth *time.Time `json:"birth,omitempty"`
 
 	//stats on run and error count
 	RunCount  int `json:"run_count"`
@@ -82,8 +80,6 @@ type Job struct {
 	StartedAt *time.Time `json:"started_at,omitempty"`
 	// CompletedAt is the UTC timestamp of the moment the job finished.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
-	// LastRecyclerCreation last time the job was recycled at
-	LastRecycleCreation *time.Time `json:"last_recycle_creation,omitempty"`
 	// Duration indicates how much the job took to complete.
 	Duration *time.Duration `json:"duration,omitempty"`
 }
@@ -113,6 +109,10 @@ func NewJob(
 		RunAt:              runAt,
 		CreatedAt:          createdAt,
 	}
+}
+
+func (j *Job) MarkPending() {
+	j.Status = Pending
 }
 
 // MarkStarted updates the status and timestamp at the moment the job started.

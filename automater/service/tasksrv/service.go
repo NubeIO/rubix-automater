@@ -8,7 +8,7 @@ type taskService struct {
 	taskRepo *taskRepo.TaskRepository
 }
 
-// New creates a new job service.
+// New creates a new job server.
 func New() *taskService {
 	return &taskService{
 		taskRepo: taskRepo.New(),

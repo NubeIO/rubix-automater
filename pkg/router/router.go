@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/NubeIO/rubix-automater/automater"
+	admin "github.com/NubeIO/rubix-automater/controller/adminctl"
 	"github.com/NubeIO/rubix-automater/controller/jobctl"
 	"github.com/NubeIO/rubix-automater/controller/pipectl"
 	"github.com/NubeIO/rubix-automater/controller/resultctl"
 	"github.com/NubeIO/rubix-automater/controller/taskctl"
+	"github.com/NubeIO/rubix-automater/controller/transactionctl"
 	"net/http"
 	"time"
 
@@ -29,6 +31,8 @@ func NewRouter(
 	resultHandler := resultctl.NewResultHTTPHandler(resultService)
 	pipelineHandler := pipectl.NewPipelineHTTPHandler(pipelineService, jobQueue)
 	taskHandler := taskctl.NewTaskHTTPHandler(taskService)
+	transactionHandler := transactionctl.NewTransactionHTTPHandler(storage)
+	adminHandler := admin.NewAdminHTTPHandler(storage)
 
 	r := gin.New()
 	if loggingFormat == "text" {
@@ -58,6 +62,8 @@ func NewRouter(
 	r.GET("/api/jobs/:uuid/results", resultHandler.Get)
 	r.DELETE("/api/jobs/:uuid/results", resultHandler.Delete)
 
+	r.GET("/api/transactions", transactionHandler.GetTransactions)
+
 	r.POST("/api/pipelines", pipelineHandler.Create)
 	r.GET("/api/pipelines", pipelineHandler.GetPipelines)
 	r.GET("/api/pipelines/:uuid", pipelineHandler.Get)
@@ -67,6 +73,9 @@ func NewRouter(
 	r.GET("/api/pipelines/:uuid/jobs", pipelineHandler.GetPipelineJobs)
 
 	r.GET("/api/tasks", taskHandler.GetTasks)
+
+	r.DELETE("/api/admin/flush", adminHandler.WipeDB)
+
 	return r
 }
 

@@ -25,11 +25,17 @@ type Storage interface {
 	CreatePipeline(p *model.Pipeline) error
 	GetPipeline(uuid string) (*model.Pipeline, error)
 
+	CreateTransaction(jobID string, job *model.Job) (*model.Transaction, error)
+	GetTransactions(status model.JobStatus) ([]*model.Transaction, error)
+
 	GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 	UpdatePipeline(uuid string, p *model.Pipeline) error
 	DeletePipeline(uuid string) error
 	CheckHealth() bool
 	Close() error
+
+	// WipeDB wipes the DB
+	WipeDB() error
 }
 
 // JobQueue represents a driven actor queue interface.
@@ -47,7 +53,7 @@ type JobQueue interface {
 	Close()
 }
 
-// JobService represents a driver actor service interface.
+// JobService represents a driver actor server interface.
 type JobService interface {
 	Create(name, taskName, description, runAt string, timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error)
 	Get(uuid string) (*model.Job, error)
@@ -58,7 +64,11 @@ type JobService interface {
 	Drop() error
 }
 
-// ResultService represents a driver actor service interface.
+type TransactionService interface {
+	GetTransactions(status string) ([]*model.Transaction, error)
+}
+
+// ResultService represents a driver actor server interface.
 type ResultService interface {
 	// Get fetches a job result.
 	Get(uuid string) (*model.JobResult, error)
@@ -66,7 +76,7 @@ type ResultService interface {
 	Delete(uuid string) error
 }
 
-// PipelineService represents a driver actor service interface.
+// PipelineService represents a driver actor server interface.
 type PipelineService interface {
 	// Create creates a new pipeline.
 	Create(name, description, runAt string, jobs []*model.Job) (*model.Pipeline, error)
@@ -82,7 +92,7 @@ type PipelineService interface {
 	Delete(uuid string) error
 }
 
-// WorkService represents a driver actor service interface.
+// WorkService represents a driver actor server interface.
 type WorkService interface {
 	// Start starts the worker pool.
 	Start()
@@ -100,7 +110,7 @@ type WorkService interface {
 	Exec(ctx context.Context, w work.Work) error
 }
 
-// TaskService represents a driver actor service interface.
+// TaskService represents a driver actor server interface.
 type TaskService interface {
 	// Register registers a new tasks in the tasks database.
 	Register(name string, taskFunc taskRepo.TaskFunc)
@@ -117,7 +127,7 @@ type Scheduler interface {
 	Dispatch(ctx context.Context, duration time.Duration)
 }
 
-// Server represents a driver actor service interface.
+// Server represents a driver actor server interface.
 type Server interface {
 	// Serve start the server.
 	Serve()

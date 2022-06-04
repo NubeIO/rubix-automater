@@ -45,7 +45,7 @@ func New(configPath string) *autoMater {
 	}
 }
 
-// Run runs the service.
+// Run runs the server.
 func (v *autoMater) Run() {
 	cfg := new(config.Config)
 	filePath, _ := filepath.Abs(v.configPath)

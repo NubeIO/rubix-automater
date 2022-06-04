@@ -8,7 +8,6 @@ import (
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/automater/service/worksrv/work"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
-	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"sync"
 	"time"
 
@@ -39,7 +38,7 @@ type workService struct {
 	logger   *logrus.Logger
 }
 
-// New creates a new work service.
+// New creates a new work server.
 func New(
 	storage automater.Storage,
 	taskRepo *taskRepo.TaskRepository,
@@ -72,9 +71,9 @@ func (srv *workService) Dispatch(w work.Work) {
 	workType := WorkTypeTask
 	for job := w.Job; ; job, workType = job.Next, WorkTypePipeline {
 		go func() {
-
 			result, ok := <-w.Result
 			if ok {
+				fmt.Println(w.Job)
 				if err := srv.storage.CreateJobResult(&result); err != nil {
 					srv.logger.Errorf("could not create job result to the storage %s", err)
 				}
@@ -146,11 +145,13 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 			w.Job.MarkCompleted(&completedAt)
 		}
 	}
-	fmt.Println(111111)
-	pprint.PrintJOSN(w.Job)
 	if w.Job.JobOptions.EnableInterval {
-
-		fmt.Println(111111, w.Job.JobOptions.EnableInterval, w.Job.UUID)
+		if _, err := srv.storage.CreateTransaction(w.Job.UUID, w.Job); err != nil {
+			w.Job.MarkPending() //rest back to pending
+			if _, err := srv.storage.Recycle(w.Job.UUID, w.Job); err != nil {
+				return err
+			}
+		}
 		if _, err := srv.storage.Recycle(w.Job.UUID, w.Job); err != nil {
 			return err
 		}
@@ -224,10 +225,7 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		}
 		// Reset timeout.
 		cancel()
-		fmt.Println(111111)
-		pprint.PrintJOSN(job)
 		if job.JobOptions.EnableInterval {
-			fmt.Println(111111, job.JobOptions.EnableInterval)
 			if _, err := srv.storage.Recycle(job.UUID, job); err != nil {
 				return err
 			}

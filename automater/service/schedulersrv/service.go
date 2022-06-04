@@ -19,7 +19,7 @@ type schedulerService struct {
 	logger      *logrus.Logger
 }
 
-// New creates a new scheduler service.
+// New creates a new scheduler server.
 func New(
 	jobQueue automater.JobQueue,
 	storage automater.Storage,

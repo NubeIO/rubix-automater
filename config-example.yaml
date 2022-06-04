@@ -7,7 +7,7 @@ job_queue:
   memory_job_queue:
     capacity: 100
   redis:
-    key_prefix: valet
+    key_prefix: automater
     min_idle_conns: 10
     pool_size: 10
 worker_pool:
@@ -20,7 +20,7 @@ storage:
   option: redis
   redis:
     url: localhost
-    key_prefix: valet
+    key_prefix: automater
     min_idle_conns: 10
     pool_size: 10
 timeout_unit: second

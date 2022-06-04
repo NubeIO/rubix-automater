@@ -10,7 +10,6 @@ import (
 	"github.com/NubeIO/rubix-automater/pkg/helpers/timeconversion"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
-	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"strings"
 	"time"
 )
@@ -24,7 +23,7 @@ type jobService struct {
 	time     intime.Time
 }
 
-// New creates a new job service.
+// New creates a new job server.
 func New(
 	storage automater.Storage,
 	taskRepo *taskRepo.TaskRepository,
@@ -63,8 +62,6 @@ func (srv *jobService) Create(
 	if err := j.Validate(srv.taskRepo); err != nil {
 		return nil, &apperrors.ResourceValidationErr{Message: err.Error()}
 	}
-	birth := srv.time.Now()
-	j.Birth = &birth
 
 	if err := srv.storage.CreateJob(j); err != nil {
 		return nil, err
@@ -79,7 +76,7 @@ func (srv *jobService) Get(uuid string) (*model.Job, error) {
 		return nil, err
 	}
 	j.SetDuration()
-	// Do not marshal job next, cause it's stored in NoSQL databases.
+	// Do not marshal job next, because it's stored in NoSQL databases.
 	j.Next = nil
 	return j, nil
 }
@@ -125,12 +122,6 @@ func (srv *jobService) Recycle(uuid string, body *model.Job) (*model.Job, error)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(22222)
-	pprint.PrintJOSN(j)
-	fmt.Println(22222)
-	fmt.Println(4444)
-	pprint.PrintJOSN(body)
-	fmt.Println(4444)
 	var nextRunTime time.Time
 	//if the job was completed and is enabled as cron
 	if j.JobOptions != nil {
@@ -143,7 +134,6 @@ func (srv *jobService) Recycle(uuid string, body *model.Job) (*model.Job, error)
 		}
 	}
 
-	now := srv.time.Now()
 	if j.RunAt != nil {
 		//runAtTime, err := time.Parse(time.RFC3339Nano, body.RunAt.String())
 		//if err != nil {
@@ -155,8 +145,6 @@ func (srv *jobService) Recycle(uuid string, body *model.Job) (*model.Job, error)
 	}
 
 	j.Status = model.Pending
-	j.CreatedAt = &now
-	j.LastRecycleCreation = &now
 	j.ScheduledAt = nil
 	j.StartedAt = nil
 	j.CompletedAt = nil
@@ -170,7 +158,7 @@ func (srv *jobService) Delete(uuid string) error {
 		return err
 	}
 	if j.BelongsToPipeline() {
-		// TODO: Add a test case for this scenario.
+		// TODO: Add a pubsub case for this scenario.
 		return &apperrors.CannotDeletePipelineJobErr{
 			Message: fmt.Sprintf(
 				`job with UUID: %s can not be deleted because it belongs 

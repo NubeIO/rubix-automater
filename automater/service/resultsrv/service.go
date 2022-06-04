@@ -11,7 +11,7 @@ type resultService struct {
 	storage automater.Storage
 }
 
-// New creates a new job result service.
+// New creates a new job result server.
 func New(storage automater.Storage) *resultService {
 	return &resultService{
 		storage: storage,

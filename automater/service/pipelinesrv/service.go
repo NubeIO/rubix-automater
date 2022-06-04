@@ -21,7 +21,7 @@ type pipeLineService struct {
 	time     intime.Time
 }
 
-// New creates a new pipeline service.
+// New creates a new pipeline server.
 func New(
 	storage automater.Storage,
 	taskRepo *taskRepo.TaskRepository,
