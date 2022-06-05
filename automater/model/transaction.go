@@ -9,6 +9,8 @@ type Transaction struct {
 	// JobID is the auto-generated pipeline identifier in UUID4 format.
 	JobID string `json:"job_id"`
 
+	IsPipeLine bool `json:"is_pipe_line"`
+
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
 

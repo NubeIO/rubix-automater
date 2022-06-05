@@ -31,6 +31,8 @@ type Storage interface {
 	GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 	UpdatePipeline(uuid string, p *model.Pipeline) error
 	DeletePipeline(uuid string) error
+	RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error)
+
 	CheckHealth() bool
 	Close() error
 
@@ -93,6 +95,8 @@ type PipelineService interface {
 	Update(uuid, name, description string) error
 	// Delete deletes a pipeline.
 	Delete(uuid string) error
+	RecycleJob(uuid string, body *model.Job) (*model.Job, error)
+	RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error)
 }
 
 // WorkService represents a driver actor server interface.

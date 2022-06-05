@@ -37,14 +37,14 @@ func New(
 
 // Create creates a new pipeline.
 func (srv *pipeLineService) Create(name, description, runAt string, jobs []*model.Job) (*model.Pipeline, error) {
-	pipelineUUID, err := srv.uuidGen.Make()
+	pipelineUUID, err := srv.uuidGen.Make("pip")
 	if err != nil {
 		return nil, err
 	}
 
 	jobIDs := make([]string, 0)
-	for i := 0; i < len(jobs); i++ {
-		jobUUID, err := srv.uuidGen.Make("pip")
+	for i := 0; i < len(jobs); i++ { //make the pipeline jobs
+		jobUUID, err := srv.uuidGen.Make("job")
 		if err != nil {
 			return nil, err
 		}
@@ -94,6 +94,15 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*mode
 		return nil, err
 	}
 	return p, nil
+}
+
+func (srv *pipeLineService) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
+	return srv.storage.RecyclePipeline(uuid, p)
+
+}
+
+func (srv *pipeLineService) RecycleJob(uuid string, p *model.Job) (*model.Job, error) {
+	return srv.storage.Recycle(uuid, p)
 }
 
 // Get fetches a pipeline.

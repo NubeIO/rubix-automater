@@ -2,12 +2,12 @@ package main
 
 import (
 	automater "github.com/NubeIO/rubix-automater"
-	"github.com/NubeIO/rubix-automater/tasks"
+	tasks2 "github.com/NubeIO/rubix-automater/service/tasks"
 )
 
 func main() {
 	v := automater.New("config.yaml")
-	v.RegisterTask(tasks.PingHostTask, tasks.PingHost)
-	v.RegisterTask(tasks.InstallAppTask, tasks.InstallApp)
+	v.RegisterTask(tasks2.PingHostTask, tasks2.PingHost)
+	v.RegisterTask(tasks2.InstallAppTask, tasks2.InstallApp)
 	v.Run()
 }

@@ -55,7 +55,7 @@ func NewRouter(
 	r.GET("/api/jobs", jobHandler.GetJobs)
 	r.GET("/api/jobs/:uuid", jobHandler.Get)
 	r.PATCH("/api/jobs/:uuid", jobHandler.Update)
-	r.PATCH("/api/recycle/:uuid", jobHandler.Recycle)
+	r.PATCH("/api/jobs/recycle/:uuid", jobHandler.Recycle)
 	r.DELETE("/api/jobs/:uuid", jobHandler.Delete)
 	r.DELETE("/api/jobs/drop", jobHandler.Drop)
 
@@ -68,6 +68,7 @@ func NewRouter(
 	r.GET("/api/pipelines", pipelineHandler.GetPipelines)
 	r.GET("/api/pipelines/:uuid", pipelineHandler.Get)
 	r.PATCH("/api/pipelines/:uuid", pipelineHandler.Update)
+	r.PATCH("/api/pipelines/recycle/:uuid", pipelineHandler.RecyclePipeline)
 	r.DELETE("/api/pipelines/:uuid", pipelineHandler.Delete)
 
 	r.GET("/api/pipelines/:uuid/jobs", pipelineHandler.GetPipelineJobs)

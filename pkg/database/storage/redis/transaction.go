@@ -29,17 +29,20 @@ func (rs *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error) {
 
 	value, err := json.Marshal(trans)
 	if err != nil {
+		fmt.Println(err, 111)
 		return nil, err
 	}
 	err = rs.Set(ctx, key, value, 0).Err()
 	if err != nil {
+		fmt.Println(err, 2222)
 		return nil, err
 	}
-	transaction, err := rs.GetTransaction(key)
+	tran, err := rs.GetTransaction(id)
 	if err != nil {
+		fmt.Println(err, 3333)
 		return nil, err
 	}
-	return transaction, nil
+	return tran, nil
 }
 
 // DeleteTransaction deletes a trans from the storage.
@@ -73,7 +76,6 @@ func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, 
 		if err := json.Unmarshal(value, j); err != nil {
 			return nil, err
 		}
-		jobs = append(jobs, j)
 		if status == model.Undefined || j.Status == status {
 			jobs = append(jobs, j)
 		}

@@ -98,6 +98,29 @@ func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 
 }
 
+// RecyclePipeline updates a pipeline to the storage.
+func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
+	//first update the jobs
+	for _, j := range p.Jobs {
+		_, err := rs.UpdateJob(j.UUID, j)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+	err := rs.UpdatePipeline(uuid, p)
+	if err != nil {
+		return nil, err
+	}
+
+	getPipeline, err := rs.GetPipeline(uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	return getPipeline, err
+}
+
 // UpdatePipeline updates a pipeline to the storage.
 func (rs *Redis) UpdatePipeline(uuid string, p *model.Pipeline) error {
 	key := rs.getRedisKeyForPipeline(uuid)

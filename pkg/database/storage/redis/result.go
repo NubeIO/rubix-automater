@@ -32,7 +32,6 @@ func (rs *Redis) GetJobResult(jobID string) (*model.JobResult, error) {
 		}
 		return nil, err
 	}
-
 	var result *model.JobResult
 	err = json.Unmarshal(val, &result)
 	if err != nil {
