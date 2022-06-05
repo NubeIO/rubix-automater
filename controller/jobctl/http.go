@@ -45,18 +45,6 @@ func (hdl *JobHTTPHandler) Create(c *gin.Context) {
 			return
 		}
 	}
-	if !j.IsScheduled() {
-		if err := hdl.jobQueue.Push(j); err != nil {
-			switch err.(type) {
-			case *apperrors.FullQueueErr:
-				hdl.HandleError(c, http.StatusServiceUnavailable, err)
-				return
-			default:
-				hdl.HandleError(c, http.StatusInternalServerError, err)
-				return
-			}
-		}
-	}
 	c.JSON(http.StatusAccepted, BuildResponseBodyDTO(j))
 }
 

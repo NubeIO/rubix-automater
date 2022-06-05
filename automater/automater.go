@@ -45,9 +45,6 @@ type Storage interface {
 
 // JobQueue represents a driven actor queue interface.
 type JobQueue interface {
-	// Push adds a job to the queue.
-	Push(j *model.Job) error
-
 	// Pop removes and returns the head job from the queue.
 	Pop() *model.Job
 
@@ -84,7 +81,7 @@ type ResultService interface {
 // PipelineService represents a driver actor server interface.
 type PipelineService interface {
 	// Create creates a new pipeline.
-	Create(name, description, runAt string, jobs []*model.Job) (*model.Pipeline, error)
+	Create(name, description, runAt string, pipelineOptions *model.PipelineOptions, jobs []*model.Job) (*model.Pipeline, error)
 	// Get fetches a pipeline.
 	Get(uuid string) (*model.Pipeline, error)
 	// GetPipelines fetches all pipelines, optionally filters the pipelines by status.

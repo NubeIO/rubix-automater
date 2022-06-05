@@ -2,10 +2,13 @@ package redis
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
+	"math"
 	"sort"
 	"time"
 )
@@ -53,7 +56,6 @@ func (rs *Redis) GetJobs(status model.JobStatus) ([]*model.Job, error) {
 	if err := iter.Err(); err != nil {
 		return nil, err
 	}
-
 	var jobs []*model.Job
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
@@ -87,7 +89,6 @@ func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*model.Job, error) {
 		}
 		return nil, err
 	}
-
 	var p *model.Pipeline
 	err = json.Unmarshal(val, &p)
 	if err != nil {
@@ -194,6 +195,16 @@ func (rs *Redis) DeleteJob(uuid string) error {
 	return nil
 }
 
+func timeDif(t1, t2 time.Time) string {
+	hs := t1.Sub(t2).Hours()
+	hs, mf := math.Modf(hs)
+	ms := mf * 60
+	ms, sf := math.Modf(ms)
+	ss := sf * 60
+	return fmt.Sprintf("%f hours %f minutes %f seconds", hs, ms, ss)
+
+}
+
 // GetDueJobs fetches all jobs scheduled to run before now and have not been scheduled yet.
 func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 	var keys []string
@@ -207,6 +218,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 	}
 
 	var dueJobs []*model.Job
+	var pendingJobs []*model.Job
 	for _, key := range keys {
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {
@@ -220,9 +232,13 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 			if j.RunAt.Before(time.Now()) && j.Status == model.Pending {
 				dueJobs = append(dueJobs, j)
 			}
+			if j.RunAt.After(time.Now()) && j.Status == model.Pending {
+				pendingJobs = append(pendingJobs, j)
+				logrus.Infof("task: %s, will run at:%s", j.TaskName, timeDif(*j.RunAt, time.Now()))
+			}
 		}
 	}
-
+	logrus.Infof("get due jobs count:%d due", len(pendingJobs))
 	// ORDER BY run_at ASC
 	sort.Slice(dueJobs, func(i, j int) bool {
 		return dueJobs[i].RunAt.Before(*dueJobs[j].RunAt)

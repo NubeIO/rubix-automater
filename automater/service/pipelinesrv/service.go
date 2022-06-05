@@ -9,7 +9,6 @@ import (
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"strings"
-	"time"
 )
 
 var _ automater.PipelineService = &pipeLineService{}
@@ -36,12 +35,11 @@ func New(
 }
 
 // Create creates a new pipeline.
-func (srv *pipeLineService) Create(name, description, runAt string, jobs []*model.Job) (*model.Pipeline, error) {
+func (srv *pipeLineService) Create(name, description, runAt string, pipelineOptions *model.PipelineOptions, jobs []*model.Job) (*model.Pipeline, error) {
 	pipelineUUID, err := srv.uuidGen.Make("pip")
 	if err != nil {
 		return nil, err
 	}
-
 	jobIDs := make([]string, 0)
 	for i := 0; i < len(jobs); i++ { //make the pipeline jobs
 		jobUUID, err := srv.uuidGen.Make("job")
@@ -50,39 +48,29 @@ func (srv *pipeLineService) Create(name, description, runAt string, jobs []*mode
 		}
 		jobIDs = append(jobIDs, jobUUID)
 	}
-
 	jobsToCreate := make([]*model.Job, 0)
 	for i, job := range jobs {
-		var runAtTime time.Time
-
-		// Propagate runAt only to first job.
-		if runAt != "" && i == 0 {
-			runAtTime, err = time.Parse(time.RFC3339Nano, runAt)
-			if err != nil {
-				return nil, &apperrors.ParseTimeErr{Message: err.Error()}
-			}
+		now, err := automater.RunAt(runAt)
+		var runAtTime = now
+		if err != nil {
+			return nil, err
 		}
-
 		jobID := jobIDs[i]
 		nextJobID := ""
 		if i < len(jobs)-1 {
 			nextJobID = jobIDs[i+1]
 		}
-
 		createdAt := srv.time.Now()
 		j := model.NewJob(
 			jobID, job.Name, job.TaskName, job.Description, pipelineUUID, nextJobID,
 			job.Timeout, &runAtTime, &createdAt, job.UsePreviousResults, job.Disable, job.JobOptions, job.TaskParams)
-
 		if err := j.Validate(srv.taskRepo); err != nil {
 			return nil, &apperrors.ResourceValidationErr{Message: err.Error()}
 		}
-
 		jobsToCreate = append(jobsToCreate, j)
 	}
-
 	createdAt := srv.time.Now()
-	p := model.NewPipeline(pipelineUUID, name, description, jobsToCreate, &createdAt)
+	p := model.NewPipeline(pipelineUUID, name, description, pipelineOptions, jobsToCreate, &createdAt)
 
 	if err := p.Validate(); err != nil {
 		return nil, &apperrors.ResourceValidationErr{Message: err.Error()}

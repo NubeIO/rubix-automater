@@ -216,20 +216,27 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		if _, err := srv.storage.CreateTransaction(w.Job); err != nil {
 			return err
 		}
-		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
-			return err
-		}
-		if p.Status == model.Failed || p.Status == model.Completed {
-			if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
+		if p.PipelineOptions != nil && p.PipelineOptions.EnableInterval {
+			if _, err := srv.storage.RecyclePipeline(p.UUID, p); err != nil {
 				return err
 			}
+
+		} else {
+			if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
+				return err
+			}
+			if p.Status == model.Failed || p.Status == model.Completed {
+				if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
+					return err
+				}
+			}
 		}
+
 		w.Result <- jobResult
 		// Stop the pipeline execution on failure.
 		if job.Status == model.Failed {
 			break
 		}
-
 		// Stop the pipeline execution if there's no other job.
 		if !job.HasNext() {
 			break

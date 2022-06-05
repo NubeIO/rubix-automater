@@ -14,7 +14,7 @@ var ctx = context.Background()
 type Client struct {
 	*redis.Client
 	KeyPrefix string
-	logger    *logrus.Logger
+	Logger    *logrus.Logger
 }
 
 // New returns a redis client.
@@ -37,9 +37,9 @@ func New(
 
 	rs.KeyPrefix = keyPrefix
 	if logger != nil {
-		rs.logger = logger
+		rs.Logger = logger
 	} else {
-		rs.logger = &logrus.Logger{Out: ioutil.Discard}
+		rs.Logger = &logrus.Logger{Out: ioutil.Discard}
 	}
 
 	opt, err := redis.ParseURL(url)
@@ -62,7 +62,7 @@ func New(
 func (rs *Client) CheckHealth() bool {
 	res, err := rs.Ping(ctx).Result()
 	if err != nil {
-		rs.logger.Errorf("ping returned error: %s", err)
+		rs.Logger.Errorf("ping returned error: %s", err)
 		return false
 	}
 	return res == "PONG"

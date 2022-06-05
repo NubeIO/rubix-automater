@@ -7,10 +7,11 @@ import (
 
 // RequestBodyDTO is the data transfer object used for a job creation or update.
 type RequestBodyDTO struct {
-	Name        string                   `json:"name"`
-	Description string                   `json:"description"`
-	RunAt       string                   `json:"run_at"`
-	Jobs        []*jobctl.RequestBodyDTO `json:"jobs"`
+	Name            string                   `json:"name"`
+	Description     string                   `json:"description"`
+	RunAt           string                   `json:"run_at"`
+	PipelineOptions *model.PipelineOptions   `json:"options"`
+	Jobs            []*jobctl.RequestBodyDTO `json:"jobs"`
 }
 
 // NewRequestBodyDTO initializes and returns a new BodyDTO instance.

@@ -161,6 +161,10 @@ func (j *Job) Validate(taskRepo *taskRepo.TaskRepository) error {
 		required = append(required, "name")
 	}
 
+	if j.RunAt == nil {
+		required = append(required, "run_at")
+	}
+
 	if j.TaskName == "" {
 		required = append(required, "task_name")
 	}

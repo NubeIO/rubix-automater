@@ -6,11 +6,21 @@ import (
 	"time"
 )
 
+type PipelineOptions struct {
+	EnableInterval    bool       `json:"enable_interval"`
+	RunOnInterval     string     `json:"run_on_interval"`
+	EnableOnFailRetry bool       `json:"enable_on_fail_retry"`
+	HowTimesToRetry   bool       `json:"how_times_to_retry"`
+	OnFailRetryDelay  *time.Time `json:"birth,omitempty"`
+}
+
 // Pipeline represents a sequence of async tasks.
 type Pipeline struct {
 	UUID        string `json:"uuid"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
+
+	PipelineOptions *PipelineOptions `json:"options"`
 
 	Jobs []*Job `json:"jobs,omitempty"`
 
@@ -32,14 +42,15 @@ type Pipeline struct {
 	Duration *time.Duration `json:"duration,omitempty"`
 }
 
-func NewPipeline(uuid, name, description string, jobs []*Job, createdAt *time.Time) *Pipeline {
+func NewPipeline(uuid, name, description string, pipelineOptions *PipelineOptions, jobs []*Job, createdAt *time.Time) *Pipeline {
 	p := &Pipeline{
-		UUID:        uuid,
-		Name:        name,
-		Description: description,
-		Jobs:        jobs,
-		Status:      Pending,
-		CreatedAt:   createdAt,
+		UUID:            uuid,
+		Name:            name,
+		Description:     description,
+		PipelineOptions: pipelineOptions,
+		Jobs:            jobs,
+		Status:          Pending,
+		CreatedAt:       createdAt,
 	}
 	return p
 }

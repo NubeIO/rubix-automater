@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/timeconversion"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/go-redis/redis/v8"
 	"sort"
 )
@@ -100,24 +102,39 @@ func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 
 // RecyclePipeline updates a pipeline to the storage.
 func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
-	//first update the jobs
-	for _, j := range p.Jobs {
-		_, err := rs.UpdateJob(j.UUID, j)
-		if err != nil {
-			return nil, err
-		}
 
-	}
-	err := rs.UpdatePipeline(uuid, p)
+	getExisting := p
+	jobs, err := rs.GetJobsByPipelineID(uuid) //get the existing pipeline jobs
 	if err != nil {
 		return nil, err
 	}
+	now := ttime.New().Now()
+	nextRunTime, _ := timeconversion.AdjustTime(now, "30 sec")
+	var recycleJobs []*model.Job
+	for _, job := range jobs {
+		job.RunAt = &nextRunTime
+		recycleJob, err := rs.Recycle(job.UUID, job) // recycle jobs
+		if err != nil {
+			return nil, err
+		}
+		recycleJob.RunAt = &nextRunTime
+		recycleJobs = append(recycleJobs, recycleJob)
+	}
 
+	getExisting.Jobs = recycleJobs
+	getExisting.Status = model.Pending
+	getExisting.RunAt = &nextRunTime
+	getExisting.StartedAt = nil
+	getExisting.Duration = nil
+
+	err = rs.UpdatePipeline(uuid, getExisting)
+	if err != nil {
+		return nil, err
+	}
 	getPipeline, err := rs.GetPipeline(uuid)
 	if err != nil {
 		return nil, err
 	}
-
 	return getPipeline, err
 }
 

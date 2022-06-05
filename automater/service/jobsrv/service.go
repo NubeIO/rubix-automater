@@ -10,7 +10,6 @@ import (
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"strings"
-	"time"
 )
 
 var _ automater.JobService = &jobService{}
@@ -40,17 +39,11 @@ func New(
 func (srv *jobService) Create(
 	name, taskName, description, runAt string,
 	timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error) {
-	var runAtTime time.Time
-
 	id, err := srv.uuidGen.Make("job")
+	now, err := automater.RunAt(runAt)
+	var runAtTime = now
 	if err != nil {
 		return nil, err
-	}
-	if runAt != "" {
-		runAtTime, err = time.Parse(time.RFC3339Nano, runAt)
-		if err != nil {
-			return nil, &apperrors.ParseTimeErr{Message: err.Error()}
-		}
 	}
 	createdAt := srv.time.Now()
 	j := model.NewJob(

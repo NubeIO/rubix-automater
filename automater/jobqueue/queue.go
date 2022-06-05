@@ -30,21 +30,6 @@ func NewRedisQueue(cfg config.Redis, loggingFormat string) *redisQueue {
 	}
 }
 
-func (q *redisQueue) Push(j *model.Job) error {
-	key := q.GetRedisPrefixedKey("job-queue")
-	value, err := json.Marshal(j)
-	if err != nil {
-		q.logger.Errorf("could not marshal job: %s", err)
-		return err
-	}
-	_, err = q.LPush(ctx, key, value).Result()
-	if err != nil {
-		q.logger.Errorf("error while LPUSH job message: %s", err)
-		return err
-	}
-	return nil
-}
-
 func (q *redisQueue) Pop() *model.Job {
 	key := q.GetRedisPrefixedKey("job-queue")
 	val, err := q.RPop(ctx, key).Bytes()
