@@ -70,10 +70,10 @@ type Job struct {
 	Status JobStatus `json:"status"`
 
 	FailureReason string `json:"failure_reason,omitempty"`
-	// RunAt is the UTC timestamp indicating the ttime for the job to run.
-	RunAt *time.Time `json:"run_at,omitempty"`
+	// RunAt is the UTC timestamp indicating the time for the job to run.
+	RunAt *time.Time `json:"schedule_at,omitempty"`
 	// RunAt is like run every 15min
-	// ScheduledAt is the UTC timestamp indicating the ttime that the job got scheduled.
+	// ScheduledAt is the UTC timestamp indicating the time that the job got scheduled.
 	ScheduledAt *time.Time `json:"scheduled_at"`
 	// CreatedAt is the UTC timestamp of the job creation.
 	CreatedAt *time.Time `json:"created_at,omitempty"`

@@ -93,9 +93,9 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 					} else {
 						srv.logger.Infoln("schedule JOB IS Not Disable", j.Name)
 					}
-					if j.BelongsToPipeline() {
-						if j.DoesUsePreviousResults() { // quite pipeline if a job has failed
-							p, _ := srv.storage.GetPipeline(j.PipelineID)
+					if j.BelongsToPipeline() { // quite pipeline if a job has failed
+						p, _ := srv.storage.GetPipeline(j.PipelineID)
+						if p.CancelOnFailure() {
 							if p.Status == model.Failed {
 								continue
 							}
@@ -108,11 +108,9 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 							}
 						}
 					}
-
 					w := srv.workService.CreateWork(j)
 					// Blocks until worker pool backlog has some space.
 					srv.workService.Dispatch(w)
-
 					scheduledAt := srv.time.Now()
 					j.MarkScheduled(&scheduledAt)
 					if _, err := srv.storage.UpdateJob(j.UUID, j); err != nil {

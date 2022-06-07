@@ -17,3 +17,27 @@ func New(url string, port int) *Client {
 	rest.Rest.SetBaseURL(fmt.Sprintf("http://%s:%d", url, port))
 	return rest
 }
+
+type Path struct {
+	Path string
+}
+
+var Paths = struct {
+	Pipeline Path
+	Jobs     Path
+	Store    Path
+	System   Path
+	Admin    Path
+}{
+	Pipeline: Path{Path: "/api/pipelines"},
+	Jobs:     Path{Path: "/api/jobs"},
+	Store:    Path{Path: "/api/store"},
+	System:   Path{Path: "/api/system"},
+	Admin:    Path{Path: "/api/admin"},
+}
+
+type Response struct {
+	StatusCode int         `json:"status_code"`
+	Message    interface{} `json:"message"`
+	resty      *resty.Response
+}

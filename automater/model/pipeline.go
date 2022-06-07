@@ -7,12 +7,10 @@ import (
 )
 
 type PipelineOptions struct {
-	EnableInterval    bool   `json:"enable_interval"`
-	RunOnInterval     string `json:"run_on_interval"`
-	EnableOnFailRetry bool   `json:"enable_on_fail_retry"`
-	DelayBetweenTask  int    `json:"delay_between_task_in_min"`
-	HowTimesToRetry   bool   `json:"how_times_to_retry"`
-	OnFailRetryDelay  string `json:"birth,omitempty"`
+	EnableInterval   bool   `json:"enable_interval"`
+	RunOnInterval    string `json:"run_on_interval"`
+	DelayBetweenTask int    `json:"delay_between_task_in_sec"`
+	CancelOnFailure  bool   `json:"cancel_on_failure"`
 }
 
 // Pipeline represents a sequence of async tasks.
@@ -27,8 +25,8 @@ type Pipeline struct {
 
 	Status JobStatus `json:"status"`
 
-	// RunAt is the UTC timestamp indicating the ttime for the pipeline to run.
-	RunAt *time.Time `json:"run_at,omitempty"`
+	// RunAt is the UTC timestamp indicating the time for the pipeline to run.
+	RunAt *time.Time `json:"schedule_at,omitempty"`
 
 	// CreatedAt is the UTC timestamp of the pipeline creation.
 	CreatedAt *time.Time `json:"created_at,omitempty"`
@@ -113,6 +111,13 @@ func (p *Pipeline) Validate() error {
 
 func (p *Pipeline) IsScheduled() bool {
 	return p.RunAt != nil
+}
+
+func (p *Pipeline) CancelOnFailure() bool {
+	if p.PipelineOptions != nil {
+		return p.PipelineOptions.CancelOnFailure
+	}
+	return false
 }
 
 func (p *Pipeline) MergeJobsInOne() {

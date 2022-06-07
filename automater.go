@@ -36,12 +36,12 @@ type autoMater struct {
 func New(configPath string) *autoMater {
 	taskService := tasksrv.New()
 	gracefulTerm := make(chan os.Signal, 1)
-	logger := logger.NewLogger("automater", defaultLoggingFormat)
+	l := logger.NewLogger("automater", defaultLoggingFormat)
 	return &autoMater{
 		configPath:       configPath,
 		taskService:      taskService,
 		gracefulTermChan: gracefulTerm,
-		logger:           logger,
+		logger:           l,
 	}
 }
 

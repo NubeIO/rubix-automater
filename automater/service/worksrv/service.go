@@ -27,7 +27,7 @@ type workService struct {
 	workers int
 	// The capacity of the worker pool queue.
 	queueCapacity int
-	// The time unit for the calculation of the timeout interval for each tasks.
+	// The time unit for the calculation of the timeout interval for each task.
 	timeoutUnit time.Duration
 
 	storage  automater.Storage

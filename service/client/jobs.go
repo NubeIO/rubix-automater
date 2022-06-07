@@ -7,26 +7,6 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-type Path struct {
-	Path string
-}
-
-var Paths = struct {
-	Jobs   Path
-	Store  Path
-	System Path
-}{
-	Jobs:   Path{Path: "/api/jobs"},
-	Store:  Path{Path: "/api/store"},
-	System: Path{Path: "/api/system"},
-}
-
-type Response struct {
-	StatusCode int         `json:"status_code"`
-	Message    interface{} `json:"message"`
-	resty      *resty.Response
-}
-
 func (response *Response) buildResponse(restyResp *resty.Response, err error) *Response {
 	response.resty = restyResp
 	var msg interface{}
