@@ -97,7 +97,6 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 						if j.DoesUsePreviousResults() { // quite pipeline if a job has failed
 							p, _ := srv.storage.GetPipeline(j.PipelineID)
 							if p.Status == model.Failed {
-								srv.logger.Errorf("will not schedule anymore jobs as the first job failed")
 								continue
 							}
 						}
