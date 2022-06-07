@@ -200,3 +200,7 @@ func (j *Job) HasNext() bool {
 func (j *Job) BelongsToPipeline() bool {
 	return j.PipelineID != ""
 }
+
+func (j *Job) DoesUsePreviousResults() bool {
+	return j.UsePreviousResults
+}

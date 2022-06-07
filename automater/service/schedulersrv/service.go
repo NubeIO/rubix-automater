@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
+	"github.com/NubeIO/rubix-automater/automater/model"
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -92,9 +93,14 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 					} else {
 						srv.logger.Infoln("schedule JOB IS Not Disable", j.Name)
 					}
-					fmt.Println(j.Name)
 					if j.BelongsToPipeline() {
-						//
+						if j.DoesUsePreviousResults() { // quite pipeline if a job has failed
+							p, _ := srv.storage.GetPipeline(j.PipelineID)
+							if p.Status == model.Failed {
+								srv.logger.Errorf("will not schedule anymore jobs as the first job failed")
+								continue
+							}
+						}
 						for job := j; job.HasNext(); job = job.Next {
 							job.Next, err = srv.storage.GetJob(job.NextJobID)
 							if err != nil {
@@ -103,6 +109,7 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 							}
 						}
 					}
+
 					w := srv.workService.CreateWork(j)
 					// Blocks until worker pool backlog has some space.
 					srv.workService.Dispatch(w)

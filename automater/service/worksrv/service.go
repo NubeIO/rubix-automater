@@ -105,7 +105,6 @@ func (srv *workService) Stop() {
 func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	// Do not let the go-routines wait for result in case of early exit.
 	defer close(w.Result)
-	fmt.Println("******************** ExecJobWork", w.Job.Name, "PipelineID", w.Job.PipelineID)
 	srv.logger.Info("executes the job worker", w.Job.Name)
 
 	startedAt := srv.time.Now()
@@ -152,6 +151,15 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 		return err
 	}
 	w.Result <- jobResult
+	if w.Job.PipelineID != "" {
+		p, _ := srv.storage.GetPipeline(w.Job.PipelineID)
+		if p.PipelineOptions != nil && p.PipelineOptions.EnableInterval {
+			if _, err := srv.storage.RecyclePipeline(p.UUID, p); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -173,7 +181,6 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		if checkJob.Status != model.Scheduled {
 			return nil
 		}
-
 		startedAt := srv.time.Now()
 		job.MarkStarted(&startedAt)
 		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
@@ -192,7 +199,6 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		jobResultChan := make(chan model.JobResult, 1)
-
 		srv.work(job, jobResultChan, jobResult.Metadata)
 
 		select {
@@ -200,7 +206,6 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 			failedAt := srv.time.Now()
 			job.MarkFailed(&failedAt, ctx.Err().Error())
 			p.MarkFailed(&failedAt)
-
 			jobResult = model.JobResult{
 				JobID:    job.UUID,
 				Metadata: nil,
@@ -224,19 +229,12 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		if _, err := srv.storage.CreateTransaction(w.Job); err != nil {
 			return err
 		}
-		if p.PipelineOptions != nil && p.PipelineOptions.EnableInterval {
-			if _, err := srv.storage.RecyclePipeline(p.UUID, p); err != nil {
+		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
+			return err
+		}
+		if p.Status == model.Failed || p.Status == model.Completed {
+			if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
 				return err
-			}
-
-		} else {
-			if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
-				return err
-			}
-			if p.Status == model.Failed || p.Status == model.Completed {
-				if err := srv.storage.UpdatePipeline(p.UUID, p); err != nil {
-					return err
-				}
 			}
 		}
 
@@ -302,10 +300,10 @@ func (srv *workService) Exec(ctx context.Context, w work.Work) error {
 	if w.Type == WorkTypePipeline {
 		return srv.ExecPipelineWork(ctx, w)
 	}
-	if w.Job.PipelineID == "" {
-		return srv.ExecJobWork(ctx, w)
-	}
-	return nil
+	//if w.Job.PipelineID == "" {
+	//	return srv.ExecJobWork(ctx, w)
+	//}
+	return srv.ExecJobWork(ctx, w)
 
 }
 
@@ -318,6 +316,7 @@ func (srv *workService) startWorker(uuid int, queue <-chan work.Work, wg *sync.W
 		if err := srv.Exec(context.Background(), w); err != nil {
 			srv.logger.Errorf("could not update job status: %s", err)
 		}
+
 		srv.logger.Infof("%s %s finished!", logPrefix, w.Type)
 	}
 	srv.logger.Infof("%s exiting...", logPrefix)

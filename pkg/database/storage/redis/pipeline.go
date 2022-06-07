@@ -3,10 +3,9 @@ package redis
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
-	"github.com/NubeIO/rubix-automater/pkg/helpers/timeconversion"
-	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/go-redis/redis/v8"
 	"sort"
 	"time"
@@ -104,7 +103,6 @@ func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 
 // RecyclePipeline updates a pipeline to the storage.
 func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
-
 	getExisting := p
 	jobs, err := rs.GetJobsByPipelineID(uuid) //get the existing pipeline jobs
 	if err != nil {
@@ -113,16 +111,13 @@ func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipelin
 
 	var nextRunTime = time.Time{}
 	var recycleJobs []*model.Job
-	for _, job := range jobs {
-		runOnInterval := "15 sec"
-		if p.PipelineOptions != nil && p.PipelineOptions.RunOnInterval != "" {
-			runOnInterval = p.PipelineOptions.RunOnInterval
-		}
-		nextRunTime, err = timeconversion.AdjustTime(ttime.New().Now(), runOnInterval)
+	for i, job := range jobs {
+		now, err := automater.PipelineRunAt(p.PipelineOptions.RunOnInterval, p.PipelineOptions, i)
+		runAtTime := now.Add(time.Millisecond * time.Duration(i+2)) // in db GetDueJobs it orders by time desc, so we need a small buffer (this is a hack)
 		if err != nil {
 			return nil, err
 		}
-		job.RunAt = &nextRunTime
+		job.RunAt = &runAtTime
 		recycleJob, err := rs.Recycle(job.UUID, job) // recycle jobs
 		if err != nil {
 			return nil, err
