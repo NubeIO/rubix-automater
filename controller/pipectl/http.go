@@ -46,7 +46,7 @@ func (hdl *PipelineHTTPHandler) Create(c *gin.Context) {
 		jobs = append(jobs, j)
 	}
 
-	p, err := hdl.pipelineService.Create(body.Name, body.Description, body.RunAt, body.PipelineOptions, jobs)
+	p, err := hdl.pipelineService.Create(body.Name, body.Description, body.ScheduleAt, body.PipelineOptions, jobs)
 	if err != nil {
 		switch err.(type) {
 		case *apperrors.ResourceValidationErr:

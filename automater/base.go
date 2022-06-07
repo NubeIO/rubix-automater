@@ -29,7 +29,7 @@ func RunAt(runAt string) (time.Time, error) {
 
 }
 
-func PipelineRunAt(runAt string, p *model.PipelineOptions, index int) (time.Time, error) {
+func PipelineRunAt(scheduleAt string, p *model.PipelineOptions, index int) (time.Time, error) {
 	now := ttime.New().Now()
 	var addDelay bool
 	if p != nil && index > 0 {
@@ -40,13 +40,13 @@ func PipelineRunAt(runAt string, p *model.PipelineOptions, index int) (time.Time
 			addDelay = true
 		}
 	}
-	if runAt == "" {
-		runAt = "1s"
+	if scheduleAt == "" {
+		scheduleAt = "1s"
 	}
-	if runAt != "" {
-		timeChecked, err := time.Parse(time.RFC3339Nano, runAt)
+	if scheduleAt != "" {
+		timeChecked, err := time.Parse(time.RFC3339Nano, scheduleAt)
 		if err != nil {
-			nextRunTime, err := timeconversion.AdjustTime(ttime.New().Now(), runAt) // user can just pass in 15 sec on the HTTP POST RunAt
+			nextRunTime, err := timeconversion.AdjustTime(ttime.New().Now(), scheduleAt) // user can just pass in 15 sec on the HTTP POST RunAt
 			if addDelay {
 				nextRunTime = timemath.Second.Add(nextRunTime, p.DelayBetweenTask*index)
 			}

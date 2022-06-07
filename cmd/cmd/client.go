@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater/model"
+	"github.com/NubeIO/rubix-automater/controller/jobctl"
+	"github.com/NubeIO/rubix-automater/controller/pipectl"
 	"github.com/NubeIO/rubix-automater/service/client"
 	"github.com/spf13/cobra"
 )
@@ -47,44 +49,42 @@ func initRest() *client.Client {
 
 func runClient(cmd *cobra.Command, args []string) {
 	cli := initRest()
-	res := &client.Response{}
-	if clientFlags.wipDB {
-		res = cli.WipeDB()
-		fmt.Println(res.StatusCode)
-		fmt.Println(res.AsString())
-	}
 	if clientFlags.addPingPipeline {
-		jobOne := &model.Job{
+		res := &client.Response{}
+		jobOne := &jobctl.RequestBodyDTO{
 			Name:     "ping 1",
 			TaskName: "pingHost",
-			JobOptions: &model.JobOptions{
+			Options: &model.JobOptions{
 				EnableInterval: false,
 				RunOnInterval:  "",
 			},
 			TaskParams: map[string]interface{}{"url": "0.0.0.0", "port": 1660},
 		}
 
-		var jobs []*model.Job
+		var jobs []*jobctl.RequestBodyDTO
 
 		jobs = append(jobs, jobOne)
 		jobOne.Name = "ping 2"
 		jobs = append(jobs, jobOne)
 
-		pipeline := &model.Pipeline{
-			Name: "ping pipeline",
+		body := &pipectl.RequestBodyDTO{
+			Name:       "ping pipeline",
+			Jobs:       jobs,
+			ScheduleAt: "10 sec",
 			PipelineOptions: &model.PipelineOptions{
-				EnableInterval:   false,
-				RunOnInterval:    "",
+				EnableInterval:   true,
+				RunOnInterval:    "10 sec",
 				DelayBetweenTask: 0,
 				CancelOnFailure:  false,
 			},
-			Jobs: jobs,
 		}
 
-		pipeline, res = cli.AddPipeline(pipeline)
+		pipeline, res := cli.AddPipeline(body)
 		fmt.Println(res.StatusCode)
-		fmt.Println(res.AsString())
-		fmt.Println(pipeline.Name)
+		if res.StatusCode > 299 {
+			fmt.Println(res.AsString())
+		}
+		fmt.Println("ADDED NEW PIPELINE", pipeline.Name)
 	}
 
 }
@@ -92,6 +92,5 @@ func runClient(cmd *cobra.Command, args []string) {
 func init() {
 	rootCmd.AddCommand(clientCmd)
 	flagSet := clientCmd.Flags()
-	flagSet.BoolVarP(&clientFlags.wipDB, "wipe", "", false, "wipe the db")
 	flagSet.BoolVarP(&clientFlags.addPingPipeline, "add-ping", "", false, "add one ping job to the pipeline")
 }

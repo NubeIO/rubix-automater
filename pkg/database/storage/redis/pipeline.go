@@ -6,6 +6,7 @@ import (
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
+	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"github.com/go-redis/redis/v8"
 	"sort"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 // CreatePipeline adds a new pipeline and of its jobs to the storage.
 func (rs *Redis) CreatePipeline(p *model.Pipeline) error {
-
+	pprint.PrintJOSN(p)
 	err := rs.Watch(ctx, func(tx *redis.Tx) error {
 
 		for _, j := range p.Jobs {
@@ -22,25 +23,23 @@ func (rs *Redis) CreatePipeline(p *model.Pipeline) error {
 			if err != nil {
 				return err
 			}
-
 			err = rs.Set(ctx, key, value, 0).Err()
 			if err != nil {
 				return err
 			}
 		}
-
 		key := rs.getRedisKeyForPipeline(p.UUID)
 		value, err := json.Marshal(p)
 		if err != nil {
 			return err
 		}
-
 		err = rs.Set(ctx, key, value, 0).Err()
 		if err != nil {
 			return err
 		}
 		return nil
 	})
+
 	if err != nil {
 		return err
 	}

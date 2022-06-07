@@ -36,7 +36,7 @@ func New(
 }
 
 // Create creates a new pipeline.
-func (srv *pipeLineService) Create(name, description, runAt string, pipelineOptions *model.PipelineOptions, jobs []*model.Job) (*model.Pipeline, error) {
+func (srv *pipeLineService) Create(name, description, scheduleAt string, pipelineOptions *model.PipelineOptions, jobs []*model.Job) (*model.Pipeline, error) {
 	pipelineUUID, err := srv.uuidGen.Make("pip")
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (srv *pipeLineService) Create(name, description, runAt string, pipelineOpti
 	}
 	jobsToCreate := make([]*model.Job, 0)
 	for i, job := range jobs {
-		now, err := automater.PipelineRunAt(runAt, pipelineOptions, i)
+		now, err := automater.PipelineRunAt(scheduleAt, pipelineOptions, i)
 		runAtTime := now.Add(time.Millisecond * time.Duration(i+2)) // in db GetDueJobs it orders by time desc, so we need a small buffer (this is a hack)
 		if err != nil {
 			return nil, err

@@ -9,7 +9,7 @@ import (
 type RequestBodyDTO struct {
 	Name            string                   `json:"name"`
 	Description     string                   `json:"description"`
-	RunAt           string                   `json:"run_at"`
+	ScheduleAt      string                   `json:"schedule_at"`
 	PipelineOptions *model.PipelineOptions   `json:"options"`
 	Jobs            []*jobctl.RequestBodyDTO `json:"jobs"`
 }

@@ -93,10 +93,12 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 					} else {
 						srv.logger.Infoln("schedule JOB IS Not Disable", j.Name)
 					}
+
 					if j.BelongsToPipeline() { // quite pipeline if a job has failed
 						p, _ := srv.storage.GetPipeline(j.PipelineID)
 						if p.CancelOnFailure() {
 							if p.Status == model.Failed {
+								srv.storage.RecyclePipeline(j.PipelineID, p) // reset the pipeline
 								continue
 							}
 						}
