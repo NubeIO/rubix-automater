@@ -147,9 +147,18 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	if _, err := srv.storage.CreateTransaction(w.Job); err != nil {
 		return err
 	}
-	if _, err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
-		return err
+
+	if w.Job.IsRecycleJob() {
+		if _, err := srv.storage.Recycle(w.Job.UUID, w.Job); err != nil {
+			return err
+		}
+
+	} else {
+		if _, err := srv.storage.UpdateJob(w.Job.UUID, w.Job); err != nil {
+			return err
+		}
 	}
+
 	w.Result <- jobResult
 	if w.Job.PipelineID != "" {
 		p, _ := srv.storage.GetPipeline(w.Job.PipelineID)

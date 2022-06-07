@@ -154,6 +154,21 @@ func (j *Job) SetDuration() {
 	}
 }
 
+// IsRecycleJob check if user wants to reuse the job
+func (j *Job) IsRecycleJob() bool {
+	if j.PipelineID != "" {
+		return false
+	}
+	if j.JobOptions != nil && j.JobOptions.EnableInterval {
+		if j.JobOptions.RunOnInterval == "" {
+			j.JobOptions.RunOnInterval = "1 sec"
+		}
+		return true
+	} else {
+		return false
+	}
+}
+
 // Validate perfoms basic sanity checks on the job request payload.
 func (j *Job) Validate(taskRepo *taskRepo.TaskRepository) error {
 	var required []string
