@@ -9,6 +9,7 @@ import (
 	"github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/go-redis/redis/v8"
 	"sort"
+	"time"
 )
 
 // CreatePipeline adds a new pipeline and of its jobs to the storage.
@@ -109,10 +110,18 @@ func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipelin
 	if err != nil {
 		return nil, err
 	}
-	now := ttime.New().Now()
-	nextRunTime, _ := timeconversion.AdjustTime(now, "30 sec")
+
+	var nextRunTime = time.Time{}
 	var recycleJobs []*model.Job
 	for _, job := range jobs {
+		runOnInterval := "15 sec"
+		if p.PipelineOptions != nil && p.PipelineOptions.RunOnInterval != "" {
+			runOnInterval = p.PipelineOptions.RunOnInterval
+		}
+		nextRunTime, err = timeconversion.AdjustTime(ttime.New().Now(), runOnInterval)
+		if err != nil {
+			return nil, err
+		}
 		job.RunAt = &nextRunTime
 		recycleJob, err := rs.Recycle(job.UUID, job) // recycle jobs
 		if err != nil {

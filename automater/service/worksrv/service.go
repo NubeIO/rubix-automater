@@ -189,9 +189,12 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 		if job.Timeout > 0 {
 			timeout = time.Duration(job.Timeout) * w.TimeoutUnit
 		}
+
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		jobResultChan := make(chan model.JobResult, 1)
+
 		srv.work(job, jobResultChan, jobResult.Metadata)
+
 		select {
 		case <-ctx.Done():
 			failedAt := srv.time.Now()

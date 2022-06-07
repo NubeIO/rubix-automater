@@ -1,7 +1,6 @@
 package pipectl
 
 import (
-	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/controller"
@@ -46,8 +45,6 @@ func (hdl *PipelineHTTPHandler) Create(c *gin.Context) {
 		}
 		jobs = append(jobs, j)
 	}
-
-	fmt.Println(body.RunAt)
 
 	p, err := hdl.pipelineService.Create(body.Name, body.Description, body.RunAt, body.PipelineOptions, jobs)
 	if err != nil {

@@ -13,6 +13,7 @@ type PingParams struct {
 	URL                string `json:"url,omitempty"`
 	Port               int    `json:"port,omitempty"`
 	ErrorOnFailSetting int    `json:"errorOnFailSetting,omitempty"` //consider failed if count is > then the amount of times the ping failed
+	DelayBetween       int    `json:"delayBetween"`
 }
 
 type PingResponse struct {
@@ -29,6 +30,8 @@ func PingHost(args ...interface{}) (interface{}, error) {
 	automater.DecodePreviousJobResults(args, &resultsMetadata)
 	metaData, err := runPingHost(params.URL, params.Port, params.ErrorOnFailSetting)
 	fmt.Println("=======================================PING after", params.ErrorOnFailSetting)
+
+	//time.Sleep(time.Duration(params.DelayBetween) * time.Second)
 	return metaData, err
 }
 
@@ -42,7 +45,7 @@ func runPingHost(url string, port int, countSetting int) (*PingResponse, error) 
 			failCount++
 			logrus.Infoln("run task ping host:", fmt.Sprintf("%s:%d", url, port), " fail count:", failCount)
 		}
-		time.Sleep(1 * time.Second)
+
 	}
 	if failCount >= 1 {
 		resp.Error = errors.New(fmt.Sprintf("ping fail count:%d was grater then the allowable ping fail count %d", failCount, countSetting))

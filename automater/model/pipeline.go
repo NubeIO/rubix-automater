@@ -7,11 +7,12 @@ import (
 )
 
 type PipelineOptions struct {
-	EnableInterval    bool       `json:"enable_interval"`
-	RunOnInterval     string     `json:"run_on_interval"`
-	EnableOnFailRetry bool       `json:"enable_on_fail_retry"`
-	HowTimesToRetry   bool       `json:"how_times_to_retry"`
-	OnFailRetryDelay  *time.Time `json:"birth,omitempty"`
+	EnableInterval    bool   `json:"enable_interval"`
+	RunOnInterval     string `json:"run_on_interval"`
+	EnableOnFailRetry bool   `json:"enable_on_fail_retry"`
+	DelayBetweenTask  int    `json:"delay_between_task_in_min"`
+	HowTimesToRetry   bool   `json:"how_times_to_retry"`
+	OnFailRetryDelay  string `json:"birth,omitempty"`
 }
 
 // Pipeline represents a sequence of async tasks.

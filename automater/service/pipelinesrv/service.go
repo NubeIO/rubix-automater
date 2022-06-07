@@ -6,8 +6,10 @@ import (
 	"github.com/NubeIO/rubix-automater/automater/model"
 	taskRepo "github.com/NubeIO/rubix-automater/automater/service/tasksrv/taskrepo"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
-	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/timeconversion"
+	ttime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
+	"github.com/jmattheis/go-timemath"
 	"strings"
 	"time"
 )
@@ -18,7 +20,7 @@ type pipeLineService struct {
 	storage  automater.Storage
 	taskRepo *taskRepo.TaskRepository
 	uuidGen  uuid.Generator
-	time     intime.Time
+	time     ttime.Time
 }
 
 // New creates a new pipeline server.
@@ -26,13 +28,42 @@ func New(
 	storage automater.Storage,
 	taskRepo *taskRepo.TaskRepository,
 	uuidGen uuid.Generator,
-	time intime.Time) *pipeLineService {
+	time ttime.Time) *pipeLineService {
 	return &pipeLineService{
 		storage:  storage,
 		taskRepo: taskRepo,
 		uuidGen:  uuidGen,
 		time:     time,
 	}
+}
+
+func RunAt(runAt string, p *model.PipelineOptions, index int) (time.Time, error) {
+	now := ttime.New().Now()
+	var addDelay bool
+	if p != nil && index > 0 {
+		if p.DelayBetweenTask > 0 {
+			addDelay = true
+		}
+	}
+	if runAt != "" {
+		timeChecked, err := time.Parse(time.RFC3339Nano, runAt)
+		if err != nil {
+			nextRunTime, err := timeconversion.AdjustTime(ttime.New().Now(), runAt) // user can just pass in 15 sec on the HTTP POST RunAt
+			if addDelay {
+				nextRunTime = timemath.Minute.Add(nextRunTime, p.DelayBetweenTask*index)
+			}
+			if err != nil {
+				return now, &apperrors.ParseTimeErr{Message: err.Error()}
+			} else {
+				return nextRunTime, nil
+			}
+		} else {
+			return timeChecked, nil
+		}
+	} else {
+		return now, nil
+	}
+
 }
 
 // Create creates a new pipeline.
@@ -51,9 +82,8 @@ func (srv *pipeLineService) Create(name, description, runAt string, pipelineOpti
 	}
 	jobsToCreate := make([]*model.Job, 0)
 	for i, job := range jobs {
-		now, err := automater.RunAt(runAt)
-		ft := now.Add(time.Millisecond * time.Duration(i+10))
-		var runAtTime = ft
+		now, err := RunAt(runAt, pipelineOptions, i)
+		runAtTime := now.Add(time.Millisecond * time.Duration(i+2)) // in db GetDueJobs it orders by time desc, so we need a small buffer (this is a hack)
 		if err != nil {
 			return nil, err
 		}
