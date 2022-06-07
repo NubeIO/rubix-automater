@@ -94,6 +94,8 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 					}
 					if j.BelongsToPipeline() {
 						for job := j; job.HasNext(); job = job.Next {
+							fmt.Println("BelongsToPipeline", job.Name, job.UUID, job.NextJobID, "job.HasNext()", job.HasNext())
+
 							job.Next, err = srv.storage.GetJob(job.NextJobID)
 							if err != nil {
 								srv.logger.Errorf("could not get piped due job from storage: %s", err)

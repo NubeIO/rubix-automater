@@ -4,7 +4,7 @@ import (
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/pkg/config"
 	"github.com/NubeIO/rubix-automater/pkg/router"
-	server2 "github.com/NubeIO/rubix-automater/pkg/server"
+	"github.com/NubeIO/rubix-automater/pkg/server"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -32,7 +32,7 @@ func ServerFactory(
 				pipelineService, taskService,
 				jobQueue, storage, loggingFormat),
 		}
-		httpsrv := server2.NewHTTPServer(srv, logger)
+		httpsrv := server.NewHTTPServer(srv, logger)
 		return httpsrv
 	}
 	return nil

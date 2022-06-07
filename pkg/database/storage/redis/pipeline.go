@@ -13,6 +13,7 @@ import (
 
 // CreatePipeline adds a new pipeline and of its jobs to the storage.
 func (rs *Redis) CreatePipeline(p *model.Pipeline) error {
+
 	err := rs.Watch(ctx, func(tx *redis.Tx) error {
 
 		for _, j := range p.Jobs {

@@ -45,6 +45,7 @@ type Storage interface {
 
 // JobQueue represents a driven actor queue interface.
 type JobQueue interface {
+	Push(j *model.Job) error
 	// Pop removes and returns the head job from the queue.
 	Pop() *model.Job
 
@@ -57,10 +58,10 @@ type JobQueue interface {
 
 // JobService represents a driver actor server interface.
 type JobService interface {
-	Create(name, taskName, description, runAt string, timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error)
+	Create(name, taskName, description string, runAt *time.Time, timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error)
 	Get(uuid string) (*model.Job, error)
 	GetJobs(status string) ([]*model.Job, error)
-	Update(uuid, name, description string) (*model.Job, error)
+	Update(uuid string, body *model.Job) (*model.Job, error)
 	Recycle(uuid string, body *model.Job) (*model.Job, error)
 	Delete(uuid string) error
 	Drop() error

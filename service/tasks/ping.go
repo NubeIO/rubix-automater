@@ -21,12 +21,14 @@ type PingResponse struct {
 }
 
 func PingHost(args ...interface{}) (interface{}, error) {
+
 	params := &PingParams{}
 	var resultsMetadata string
 	automater.DecodeTaskParams(args, params)
+	fmt.Println("=======================================PING", params.ErrorOnFailSetting)
 	automater.DecodePreviousJobResults(args, &resultsMetadata)
-	time.Sleep(1 * time.Second)
 	metaData, err := runPingHost(params.URL, params.Port, params.ErrorOnFailSetting)
+	fmt.Println("=======================================PING after", params.ErrorOnFailSetting)
 	return metaData, err
 }
 
@@ -40,12 +42,13 @@ func runPingHost(url string, port int, countSetting int) (*PingResponse, error) 
 			failCount++
 			logrus.Infoln("run task ping host:", fmt.Sprintf("%s:%d", url, port), " fail count:", failCount)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 	if failCount >= 1 {
 		resp.Error = errors.New(fmt.Sprintf("ping fail count:%d was grater then the allowable ping fail count %d", failCount, countSetting))
 		return resp, resp.Error
 	}
+
 	resp.Ok = true
 	return resp, resp.Error
 }

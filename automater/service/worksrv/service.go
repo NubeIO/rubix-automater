@@ -105,6 +105,7 @@ func (srv *workService) Stop() {
 func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	// Do not let the go-routines wait for result in case of early exit.
 	defer close(w.Result)
+	fmt.Println("******************** ExecJobWork", w.Job.Name, "PipelineID", w.Job.PipelineID)
 	srv.logger.Info("executes the job worker", w.Job.Name)
 
 	startedAt := srv.time.Now()
@@ -158,14 +159,21 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error {
 	// Do not let the go-routines wait for result in case of early exit.
 	defer close(w.Result)
-
 	p, err := srv.storage.GetPipeline(w.Job.PipelineID)
 	if err != nil {
 		return err
 	}
-	var jobResult model.JobResult
 
+	var jobResult model.JobResult
 	for job, i := w.Job, 0; ; job, i = job.Next, i+1 {
+		checkJob, err := srv.storage.GetJob(job.UUID)
+		if err != nil {
+			return err
+		}
+		if checkJob.Status != model.Scheduled {
+			return nil
+		}
+
 		startedAt := srv.time.Now()
 		job.MarkStarted(&startedAt)
 		if _, err := srv.storage.UpdateJob(job.UUID, job); err != nil {
@@ -177,16 +185,13 @@ func (srv *workService) ExecPipelineWork(ctx context.Context, w work.Work) error
 				return err
 			}
 		}
-
 		timeout := DefaultJobTimeout
 		if job.Timeout > 0 {
 			timeout = time.Duration(job.Timeout) * w.TimeoutUnit
 		}
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		jobResultChan := make(chan model.JobResult, 1)
-
 		srv.work(job, jobResultChan, jobResult.Metadata)
-
 		select {
 		case <-ctx.Done():
 			failedAt := srv.time.Now()
@@ -294,18 +299,23 @@ func (srv *workService) Exec(ctx context.Context, w work.Work) error {
 	if w.Type == WorkTypePipeline {
 		return srv.ExecPipelineWork(ctx, w)
 	}
-	return srv.ExecJobWork(ctx, w)
+	if w.Job.PipelineID == "" {
+		return srv.ExecJobWork(ctx, w)
+	}
+	return nil
+
 }
 
+// startWorker loops through the pending jobs and will call the
 func (srv *workService) startWorker(uuid int, queue <-chan work.Work, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logPrefix := fmt.Sprintf("[worker] %d", uuid)
-	for work := range queue {
-		srv.logger.Infof("%s executing %s...", logPrefix, work.Type)
-		if err := srv.Exec(context.Background(), work); err != nil {
+	logPrefix := fmt.Sprintf("[startWorker worker] %d", uuid)
+	for w := range queue {
+		srv.logger.Infof("%s executing %s... job name:%s", logPrefix, w.Type, w.Job.Name)
+		if err := srv.Exec(context.Background(), w); err != nil {
 			srv.logger.Errorf("could not update job status: %s", err)
 		}
-		srv.logger.Infof("%s %s finished!", logPrefix, work.Type)
+		srv.logger.Infof("%s %s finished!", logPrefix, w.Type)
 	}
 	srv.logger.Infof("%s exiting...", logPrefix)
 }

@@ -234,7 +234,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 			}
 			if j.RunAt.After(time.Now()) && j.Status == model.Pending {
 				pendingJobs = append(pendingJobs, j)
-				logrus.Infof("task: %s, will run at:%s", j.TaskName, timeDif(*j.RunAt, time.Now()))
+				logrus.Infof("name:%s task:%s, will run at:%s", j.Name, j.TaskName, timeDif(*j.RunAt, time.Now()))
 			}
 		}
 	}

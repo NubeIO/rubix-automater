@@ -6,6 +6,7 @@ import (
 	"github.com/NubeIO/rubix-automater/controller"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -93,7 +94,22 @@ func (hdl *JobHTTPHandler) Update(c *gin.Context) {
 	body := RequestBodyDTO{}
 	c.BindJSON(&body)
 
-	j, err := hdl.jobService.Update(c.Param("uuid"), body.Name, body.Description)
+	job := &model.Job{
+		Name:        body.Name,
+		Description: body.Name,
+		Disable:     body.Disable,
+		TaskName:    "",
+		RunAt:       &time.Time{},
+		JobOptions: &model.JobOptions{
+			EnableInterval:    body.Options.EnableInterval,
+			RunOnInterval:     body.Options.RunOnInterval,
+			EnableOnFailRetry: false,
+			HowTimesToRetry:   false,
+			OnFailRetryDelay:  &time.Time{},
+		},
+	}
+
+	j, err := hdl.jobService.Update(c.Param("uuid"), job)
 	if err != nil {
 		switch err.(type) {
 		case *apperrors.NotFoundErr:

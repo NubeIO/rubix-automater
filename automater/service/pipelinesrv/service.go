@@ -9,6 +9,7 @@ import (
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"strings"
+	"time"
 )
 
 var _ automater.PipelineService = &pipeLineService{}
@@ -51,7 +52,8 @@ func (srv *pipeLineService) Create(name, description, runAt string, pipelineOpti
 	jobsToCreate := make([]*model.Job, 0)
 	for i, job := range jobs {
 		now, err := automater.RunAt(runAt)
-		var runAtTime = now
+		ft := now.Add(time.Millisecond * time.Duration(i+10))
+		var runAtTime = ft
 		if err != nil {
 			return nil, err
 		}

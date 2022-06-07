@@ -28,6 +28,7 @@ require (
 	github.com/NubeIO/lib-systemctl-go v0.0.4 // indirect
 	github.com/NubeIO/lib-uuid v0.0.1 // indirect
 	github.com/NubeIO/nubeio-rubix-lib-helpers-go v0.2.7 // indirect
+	github.com/NubeIO/nubeio-rubix-lib-models-go v1.2.4 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

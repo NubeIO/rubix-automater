@@ -1,14 +1,13 @@
 package pipectl
 
 import (
+	"fmt"
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/controller"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
-	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // PipelineHTTPHandler is an HTTP controller that exposes pipeline endpoints.
@@ -43,10 +42,12 @@ func (hdl *PipelineHTTPHandler) Create(c *gin.Context) {
 			Timeout:            jobDTO.Timeout,
 			TaskParams:         jobDTO.TaskParams,
 			UsePreviousResults: jobDTO.UsePreviousResults,
+			JobOptions:         jobDTO.Options,
 		}
 		jobs = append(jobs, j)
 	}
-	pprint.PrintJOSN(body)
+
+	fmt.Println(body.RunAt)
 
 	p, err := hdl.pipelineService.Create(body.Name, body.Description, body.RunAt, body.PipelineOptions, jobs)
 	if err != nil {
@@ -62,6 +63,25 @@ func (hdl *PipelineHTTPHandler) Create(c *gin.Context) {
 			return
 		}
 	}
+	if !p.IsScheduled() {
+		// Push it as one job into the queue.
+		p.MergeJobsInOne()
+
+		// Push only the first job of the pipeline.
+		if err := hdl.jobQueue.Push(p.Jobs[0]); err != nil {
+			switch err.(type) {
+			case *apperrors.FullQueueErr:
+				hdl.HandleError(c, http.StatusServiceUnavailable, err)
+				return
+			default:
+				hdl.HandleError(c, http.StatusInternalServerError, err)
+				return
+			}
+		}
+		// Do not include next job in the response body.
+		p.UnmergeJobs()
+	}
+
 	c.JSON(http.StatusAccepted, BuildResponseBodyDTO(p))
 }
 

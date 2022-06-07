@@ -10,6 +10,7 @@ import (
 	intime "github.com/NubeIO/rubix-automater/pkg/helpers/ttime"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"strings"
+	"time"
 )
 
 var _ automater.JobService = &jobService{}
@@ -37,18 +38,14 @@ func New(
 
 // Create creates a new job.
 func (srv *jobService) Create(
-	name, taskName, description, runAt string,
+	name, taskName, description string, runAt *time.Time,
 	timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error) {
-	id, err := srv.uuidGen.Make("job")
-	now, err := automater.RunAt(runAt)
-	var runAtTime = now
-	if err != nil {
-		return nil, err
-	}
+	id, _ := srv.uuidGen.Make("job")
+
 	createdAt := srv.time.Now()
 	j := model.NewJob(
 		id, name, taskName, description,
-		"", "", timeout, &runAtTime,
+		"", "", timeout, runAt,
 		&createdAt, false, disable, options, taskParams)
 
 	if err := j.Validate(srv.taskRepo); err != nil {
@@ -97,18 +94,20 @@ func (srv *jobService) GetJobs(status string) ([]*model.Job, error) {
 }
 
 // Update updates a job.
-func (srv *jobService) Update(uuid, name, description string) (*model.Job, error) {
-	j, err := srv.storage.GetJob(uuid)
+func (srv *jobService) Update(uuid string, body *model.Job) (*model.Job, error) {
+	_, err := srv.storage.GetJob(uuid)
 	if err != nil {
 		return nil, err
 	}
-	j.Name = name
-	j.Description = description
-	return srv.storage.UpdateJob(uuid, j)
+	return srv.storage.UpdateJob(uuid, body)
 }
 
 // Recycle reuse a job.
 func (srv *jobService) Recycle(uuid string, body *model.Job) (*model.Job, error) {
+	_, err := srv.storage.GetJob(uuid)
+	if err != nil {
+		return nil, err
+	}
 	return srv.storage.Recycle(uuid, body)
 }
 

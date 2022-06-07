@@ -28,6 +28,7 @@ type JobOptions struct {
 	EnableOnFailRetry bool       `json:"enable_on_fail_retry"`
 	HowTimesToRetry   bool       `json:"how_times_to_retry"`
 	OnFailRetryDelay  *time.Time `json:"birth,omitempty"`
+	OrderOfExecution  int        `json:"order_of_execution"`
 }
 
 // Job represents an async tasks.
