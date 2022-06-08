@@ -2,10 +2,18 @@ module github.com/NubeIO/rubix-automater
 
 go 1.18
 
+//replace github.com/NubeIO/lib-redis => /home/aidan/code/go/nube/lib/lib-redis
+
+//replace github.com/NubeIO/rubix-cli-app => /home/aidan/code/go/nube/rubix-cli-app
+
+//replace github.com/NubeIO/rubix-assist => /home/aidan/code/go/nube/rubix-assist
+
 require (
+	github.com/NubeIO/lib-redis v0.0.3
 	github.com/NubeIO/nubeio-rubix-lib-helpers-go v0.2.7
 	github.com/NubeIO/nubeio-rubix-lib-models-go v1.2.4
-	github.com/NubeIO/rubix-cli-app v0.0.3
+	github.com/NubeIO/rubix-assist v0.0.1
+	github.com/NubeIO/rubix-cli-app v0.0.4
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.8.0
 	github.com/go-redis/redis/v8 v8.11.5
@@ -26,7 +34,7 @@ require (
 	github.com/NubeIO/lib-command v0.0.2 // indirect
 	github.com/NubeIO/lib-date v0.0.1 // indirect
 	github.com/NubeIO/lib-dirs v0.0.1 // indirect
-	github.com/NubeIO/lib-networking v0.0.3 // indirect
+	github.com/NubeIO/lib-networking v0.0.4 // indirect
 	github.com/NubeIO/lib-schema v0.0.2 // indirect
 	github.com/NubeIO/lib-store v0.0.1 // indirect
 	github.com/NubeIO/lib-systemctl-go v0.0.4 // indirect

@@ -3,7 +3,9 @@ package redis
 import (
 	"context"
 	"fmt"
+	"github.com/NubeIO/lib-redis/libredis"
 	"github.com/NubeIO/rubix-automater/automater"
+	"github.com/NubeIO/rubix-automater/pkg/pubsub"
 	rs "github.com/NubeIO/rubix-automater/pkg/redis"
 )
 
@@ -13,13 +15,17 @@ var ctx = context.Background()
 // Redis represents a redis client.
 type Redis struct {
 	*rs.Client
+	pub libredis.Client
 }
 
 // New returns a redis client.
 func New(url string, poolSize, minIdleConns int, keyPrefix string) *Redis {
 	client := rs.New(url, poolSize, minIdleConns, keyPrefix, nil)
+	c := &libredis.Config{Addr: url}
+	pub := pubsub.New(c)
 	return &Redis{
 		Client: client,
+		pub:    pub,
 	}
 }
 

@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	automater "github.com/NubeIO/rubix-automater"
-	"github.com/NubeIO/rubix-automater/service/apps"
 	"github.com/NubeIO/rubix-automater/service/tasks"
+	"github.com/NubeIO/rubix-automater/service/tasks/apps"
 	"github.com/NubeIO/rubix-automater/service/tasks/flow"
 	"github.com/NubeIO/rubix-automater/service/tasks/ping"
 	"github.com/spf13/cobra"

@@ -220,6 +220,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 	var dueJobs []*model.Job
 	var pendingJobs []*model.Job
 	for _, key := range keys {
+
 		value, err := rs.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
@@ -228,6 +229,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 		if err := json.Unmarshal(value, j); err != nil {
 			return nil, err
 		}
+
 		if j.IsScheduled() {
 			if j.RunAt.Before(time.Now()) && j.Status == model.Pending {
 				dueJobs = append(dueJobs, j)
@@ -235,6 +237,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 			if j.RunAt.After(time.Now()) && j.Status == model.Pending {
 				pendingJobs = append(pendingJobs, j)
 				logrus.Infof("name:%s task:%s, will run at:%s", j.Name, j.TaskName, timeDif(*j.RunAt, time.Now()))
+
 			}
 		}
 	}

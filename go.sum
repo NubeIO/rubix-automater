@@ -45,8 +45,10 @@ github.com/NubeIO/lib-date v0.0.1 h1:u1/MIoeOj4fVrNPr0Oy4J/l6e38lBFxE2s0XGVf4GnY
 github.com/NubeIO/lib-date v0.0.1/go.mod h1:VvpSwdwcVCaOgTN+Ad96nHBkFDWTt3VekG933QCtGtc=
 github.com/NubeIO/lib-dirs v0.0.1 h1:4YWJbNWniiHyO7Fn1d4MIPuiNlkj7taGn/F0Zfp6Swk=
 github.com/NubeIO/lib-dirs v0.0.1/go.mod h1:PCDWQm82Nezp9oyhkpqyfVH6w6+1lzfDwfRdYVF5sPY=
-github.com/NubeIO/lib-networking v0.0.3 h1:ol3S6FxlDr/6hVJfYMXH2SdHkk8Um0uPBhe6lvxR/nc=
-github.com/NubeIO/lib-networking v0.0.3/go.mod h1:wO04Ul6Wdr5w/7s8UMZzV1/HMXuVSVFzqq7h5A3Vl6k=
+github.com/NubeIO/lib-networking v0.0.4 h1:GtemkSetvUmd4c6FHY/OXYj3bu+zdqhDxEIZqdMD8vM=
+github.com/NubeIO/lib-networking v0.0.4/go.mod h1:wO04Ul6Wdr5w/7s8UMZzV1/HMXuVSVFzqq7h5A3Vl6k=
+github.com/NubeIO/lib-redis v0.0.3 h1:Vwi+qU3OGIJHIrREG2boWnSHkwdAZ1taceNKqpMePTc=
+github.com/NubeIO/lib-redis v0.0.3/go.mod h1:W2I3OIAOzJor76k7D+i8tJ+wVl/5RX0ED8cpOKFbVxM=
 github.com/NubeIO/lib-schema v0.0.2 h1:T1AbNSQpW45U6Q0jv8+ezlhhTyhLaFEo8EhdoOVRMD8=
 github.com/NubeIO/lib-schema v0.0.2/go.mod h1:+XEsOqjtJ/NlVo13p+5nZQK4LDRKkJTB3SxPi6u8vhM=
 github.com/NubeIO/lib-store v0.0.1 h1:7VwFEf70oLnSTDIRckNA2tXELPoxfTkH1rEU5wAkNSw=
@@ -60,8 +62,10 @@ github.com/NubeIO/nubeio-rubix-lib-helpers-go v0.2.7/go.mod h1:oLI6n9wuko0KIEzrL
 github.com/NubeIO/nubeio-rubix-lib-models-go v1.0.4/go.mod h1:A1BPuc3UpE1EF3ugdf+8QIIKTT8s3eK+pfUcheJX2JM=
 github.com/NubeIO/nubeio-rubix-lib-models-go v1.2.4 h1:44Tos3Zbfep20ZdtYQpoFebEYIbrLHdoc82QcsCU17o=
 github.com/NubeIO/nubeio-rubix-lib-models-go v1.2.4/go.mod h1:J0Xy/dX/f/xIhEnW6ZhkE2LiyuRk2H9gCb0Uk+2SSSk=
-github.com/NubeIO/rubix-cli-app v0.0.3 h1:+P1T16EnlrWxHW5pMYAVmz3UkDhHBmlXQlmq1z+ORJo=
-github.com/NubeIO/rubix-cli-app v0.0.3/go.mod h1:4BFtzbszgcOI3OMDbiMapG7BfA2wOhwpIHczag51X2c=
+github.com/NubeIO/rubix-assist v0.0.1 h1:urGdw38gYTzQ/ad1w8th2naxtNnPR02UNt+DfDwNaSY=
+github.com/NubeIO/rubix-assist v0.0.1/go.mod h1:ubh0jUdIKaXT4bmaG52ealGrKD5zwFvmV2C7iSrOAx0=
+github.com/NubeIO/rubix-cli-app v0.0.4 h1:LZzljzVkuYuX7FJ3VDnpPoMd8PEoZ6hqo5e/YCuNKPw=
+github.com/NubeIO/rubix-cli-app v0.0.4/go.mod h1:4BFtzbszgcOI3OMDbiMapG7BfA2wOhwpIHczag51X2c=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/THREATINT/go-net v1.2.10/go.mod h1:4n3ITWyUUfaEp8JNAompTT+PuPANXL9i9TyOUijGnwk=

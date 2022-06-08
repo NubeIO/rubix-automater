@@ -136,7 +136,7 @@ func (srv *workService) ExecJobWork(ctx context.Context, w work.Work) error {
 	case jobResult = <-jobResultChan:
 		if jobResult.Error != "" {
 			failedAt := srv.time.Now()
-			srv.logger.Errorln("RAN FAILED", w.Job.Name)
+			srv.logger.Errorln("RAN FAILED", w.Job.Name, "ERR", jobResult.Error)
 			w.Job.MarkFailed(&failedAt, jobResult.Error)
 		} else {
 			srv.logger.Info("RAN JOB", w.Job.Name)
