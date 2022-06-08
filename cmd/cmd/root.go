@@ -3,7 +3,10 @@ package cmd
 import (
 	"fmt"
 	automater "github.com/NubeIO/rubix-automater"
+	"github.com/NubeIO/rubix-automater/service/apps"
 	"github.com/NubeIO/rubix-automater/service/tasks"
+	"github.com/NubeIO/rubix-automater/service/tasks/flow"
+	"github.com/NubeIO/rubix-automater/service/tasks/ping"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -25,39 +28,15 @@ var rootFlags struct {
 	wipeDb bool
 }
 
-func runServer() {
-	if rootFlags.server {
-		v := automater.New(rootFlags.config)
-		v.RegisterTask(tasks.PingHostTask, tasks.PingHost)
-		v.RegisterTask(tasks.InstallAppTask, tasks.InstallApp)
-		v.RegisterTask(tasks.PointWriteTask, tasks.PointWrite)
-		v.Run()
-	}
-}
-
 func runRoot(cmd *cobra.Command, args []string) {
 
 	if rootFlags.server {
 		v := automater.New(rootFlags.config)
-		v.RegisterTask(tasks.PingHostTask, tasks.PingHost)
-		v.RegisterTask(tasks.InstallAppTask, tasks.InstallApp)
-		v.RegisterTask(tasks.PointWriteTask, tasks.PointWrite)
+		v.RegisterTask(tasks.PingHostTask, ping.Host)
+		v.RegisterTask(tasks.InstallAppTask, apps.InstallApp)
+		v.RegisterTask(tasks.PointWriteTask, flow.PointWrite)
 		v.Run()
 	}
-
-	//go runServer()
-	//
-	//if rootFlags.wipeDb {
-	//	time.Sleep(5 * time.Second)
-	//	cli := initRest()
-	//	res := &client.Response{}
-	//	res = cli.WipeDB()
-	//	fmt.Println(res.StatusCode)
-	//	fmt.Println(res.AsString())
-	//	keepRunning()
-	//} else {
-	//	keepRunning()
-	//}
 
 }
 

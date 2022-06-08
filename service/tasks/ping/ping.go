@@ -1,4 +1,4 @@
-package tasks
+package ping
 
 import (
 	"errors"
@@ -9,21 +9,21 @@ import (
 	"time"
 )
 
-type PingParams struct {
+type Params struct {
 	URL                string `json:"url,omitempty"`
 	Port               int    `json:"port,omitempty"`
 	ErrorOnFailSetting int    `json:"errorOnFailSetting,omitempty"` //consider failed if count is > then the amount of times the ping failed
 	DelayBetween       int    `json:"delayBetween"`
 }
 
-type PingResponse struct {
+type Response struct {
 	Ok    bool  `json:"ok"`
 	Error error `json:"error"`
 }
 
-func PingHost(args ...interface{}) (interface{}, error) {
+func Host(args ...interface{}) (interface{}, error) {
 
-	params := &PingParams{}
+	params := &Params{}
 	var resultsMetadata string
 	automater.DecodeTaskParams(args, params)
 	fmt.Println("=======================================PING", params.ErrorOnFailSetting)
@@ -35,8 +35,8 @@ func PingHost(args ...interface{}) (interface{}, error) {
 	return metaData, err
 }
 
-func runPingHost(url string, port int, countSetting int) (*PingResponse, error) {
-	resp := &PingResponse{}
+func runPingHost(url string, port int, countSetting int) (*Response, error) {
+	resp := &Response{}
 	failCount := 0
 	for i := 1; i <= 1; i++ { //ping 3 times
 		if ping(url, port) {

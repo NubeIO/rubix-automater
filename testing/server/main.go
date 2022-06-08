@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,14 @@ var redisClient = redis.NewClient(&redis.Options{
 
 func main() {
 	app := fiber.New()
+
+	for i := 1; i < 5; i++ {
+		fmt.Println(11111)
+		if err := redisClient.Publish(ctx, "test", "1234").Err(); err != nil {
+			panic(err)
+		}
+
+	}
 
 	app.Post("/", func(c *fiber.Ctx) error {
 		user := new(User)

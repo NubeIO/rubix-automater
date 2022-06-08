@@ -1,4 +1,4 @@
-package tasks
+package ping
 
 import (
 	"fmt"

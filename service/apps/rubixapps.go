@@ -1,8 +1,9 @@
-package tasks
+package apps
 
 import (
 	"errors"
 	automater "github.com/NubeIO/rubix-automater"
+	"github.com/NubeIO/rubix-automater/service/tasks/ping"
 	dbase "github.com/NubeIO/rubix-cli-app/database"
 	"github.com/NubeIO/rubix-cli-app/service/client"
 	"time"
@@ -18,7 +19,7 @@ type InstallAppParams struct {
 
 func InstallApp(args ...interface{}) (interface{}, error) {
 	params := &InstallAppParams{}
-	resultsMetadata := &PingResponse{}
+	resultsMetadata := &ping.Response{}
 	automater.DecodeTaskParams(args, params)
 	automater.DecodePreviousJobResults(args, &resultsMetadata)
 	time.Sleep(1 * time.Second)
