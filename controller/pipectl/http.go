@@ -167,7 +167,7 @@ func (hdl *PipelineHTTPHandler) GetPipelineJobs(c *gin.Context) {
 
 // Update updates a pipeline.
 func (hdl *PipelineHTTPHandler) Update(c *gin.Context) {
-	body := RequestBodyDTO{}
+	body := PipelineBody{}
 	c.BindJSON(&body)
 
 	err := hdl.pipelineService.Update(c.Param("uuid"), body.Name, body.Description)

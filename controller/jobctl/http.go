@@ -91,7 +91,7 @@ func (hdl *JobHTTPHandler) GetJobs(c *gin.Context) {
 
 // Update updates a job.
 func (hdl *JobHTTPHandler) Update(c *gin.Context) {
-	body := RequestBodyDTO{}
+	body := JobBody{}
 	c.BindJSON(&body)
 
 	job := &model.Job{

@@ -7,6 +7,7 @@ import (
 )
 
 type PipelineOptions struct {
+	Disable          bool   `json:"disable"`
 	EnableInterval   bool   `json:"enable_interval"`
 	RunOnInterval    string `json:"run_on_interval"`
 	DelayBetweenTask int    `json:"delay_between_task_in_sec"`
@@ -111,6 +112,13 @@ func (p *Pipeline) Validate() error {
 
 func (p *Pipeline) IsScheduled() bool {
 	return p.RunAt != nil
+}
+
+func (p *Pipeline) IsDisabled() bool {
+	if p.PipelineOptions != nil {
+		return p.PipelineOptions.Disable
+	}
+	return false
 }
 
 func (p *Pipeline) CancelOnFailure() bool {

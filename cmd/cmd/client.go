@@ -51,7 +51,7 @@ func runClient(cmd *cobra.Command, args []string) {
 	cli := initRest()
 	if clientFlags.addPingPipeline {
 		res := &client.Response{}
-		jobOne := &jobctl.RequestBodyDTO{
+		jobOne := &jobctl.JobBody{
 			Name:     "ping 1",
 			TaskName: "pingHost",
 			Options: &model.JobOptions{
@@ -61,13 +61,13 @@ func runClient(cmd *cobra.Command, args []string) {
 			TaskParams: map[string]interface{}{"url": "0.0.0.0", "port": 1660},
 		}
 
-		var jobs []*jobctl.RequestBodyDTO
+		var jobs []*jobctl.JobBody
 
 		jobs = append(jobs, jobOne)
 		jobOne.Name = "ping 2"
 		jobs = append(jobs, jobOne)
 
-		body := &pipectl.RequestBodyDTO{
+		body := &pipectl.PipelineBody{
 			Name:       "ping pipeline",
 			Jobs:       jobs,
 			ScheduleAt: "10 sec",

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NubeIO/rubix-automater/automater/model"
+	"github.com/NubeIO/rubix-automater/controller/jobctl"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -56,7 +57,7 @@ func (inst *Client) GetJob(uuid string) (data *model.Job, response *Response) {
 	return resp.Result().(*model.Job), response.buildResponse(resp, err)
 }
 
-func (inst *Client) AddJob(body *model.Job) (data *model.Job, response *Response) {
+func (inst *Client) AddJob(body *jobctl.JobBody) (data *model.Job, response *Response) {
 	path := fmt.Sprintf(Paths.Jobs.Path)
 	response = &Response{}
 	resp, err := inst.Rest.R().

@@ -87,16 +87,20 @@ func (srv *schedulerService) Schedule(ctx context.Context, duration time.Duratio
 					continue
 				}
 				for _, j := range dueJobs {
-					if j.Disable {
-						srv.logger.Infoln("schedule JOB Is Disable name:", j.Name)
-						continue
+					if !j.BelongsToPipeline() {
+						if j.Disable {
+							srv.logger.Infoln("schedule JOB Is Disable name:", j.Name)
+							continue
+						} else {
+							srv.logger.Infoln("schedule JOB IS Not Disable", j.Name)
+						}
 					} else {
-						srv.logger.Infoln("schedule JOB IS Not Disable", j.Name)
-					}
-
-					if j.BelongsToPipeline() { // quite pipeline if a job has failed
 						p, _ := srv.storage.GetPipeline(j.PipelineID)
-						if p.CancelOnFailure() {
+						if p.IsDisabled() { // reset the pipeline
+							srv.storage.RecyclePipeline(j.PipelineID, p) // reset the pipeline
+							continue
+						}
+						if p.CancelOnFailure() { // quite pipeline if a job has failed
 							if p.Status == model.Failed {
 								srv.storage.RecyclePipeline(j.PipelineID, p) // reset the pipeline
 								continue
