@@ -10,9 +10,7 @@ go 1.18
 
 require (
 	github.com/NubeIO/lib-redis v0.0.3
-	github.com/NubeIO/nubeio-rubix-lib-helpers-go v0.2.7
 	github.com/NubeIO/nubeio-rubix-lib-models-go v1.2.4
-	github.com/NubeIO/rubix-assist v0.0.2
 	github.com/NubeIO/rubix-cli-app v0.0.4
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.8.0
@@ -32,13 +30,13 @@ require (
 require (
 	github.com/NubeIO/git v0.0.3 // indirect
 	github.com/NubeIO/lib-command v0.0.2 // indirect
-	github.com/NubeIO/lib-date v0.0.1 // indirect
 	github.com/NubeIO/lib-dirs v0.0.1 // indirect
 	github.com/NubeIO/lib-networking v0.0.4 // indirect
 	github.com/NubeIO/lib-schema v0.0.2 // indirect
 	github.com/NubeIO/lib-store v0.0.1 // indirect
 	github.com/NubeIO/lib-systemctl-go v0.0.4 // indirect
 	github.com/NubeIO/lib-uuid v0.0.1 // indirect
+	github.com/NubeIO/nubeio-rubix-lib-helpers-go v0.2.7 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

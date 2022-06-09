@@ -1,12 +1,9 @@
 package flow
 
 import (
-	"errors"
 	"fmt"
-	"github.com/NubeIO/nubeio-rubix-lib-helpers-go/pkg/nils"
 	"github.com/NubeIO/nubeio-rubix-lib-models-go/pkg/v1/model"
 	automater "github.com/NubeIO/rubix-automater"
-	"github.com/NubeIO/rubix-automater/service/client"
 	"math/rand"
 	"time"
 )
@@ -32,45 +29,45 @@ func PointWrite(args ...interface{}) (interface{}, error) {
 }
 
 func runPointWrite(body *FlowAppParams) (interface{}, error) {
-	cli := client.New(body.URL, body.Port)
-	var writeValue *float64
-	if body.Value == nil {
-		writeValue = nils.NewFloat64(ran())
-	} else {
-		writeValue = body.Value
-	}
-	fmt.Println(90909090, nils.Float64IsNil(writeValue))
+	//cli := autocli.New(body.URL, body.Port)
+	//var writeValue *float64
+	//if body.Value == nil {
+	//	writeValue = nils.NewFloat64(ran())
+	//} else {
+	//	writeValue = body.Value
+	//}
+	//fmt.Println(90909090, nils.Float64IsNil(writeValue))
 
-	pri := &model.Priority{
-		P1:  nil,
-		P2:  nil,
-		P3:  nil,
-		P4:  nil,
-		P5:  nil,
-		P6:  nil,
-		P7:  nil,
-		P8:  nil,
-		P9:  nil,
-		P10: nil,
-		P11: nil,
-		P12: nil,
-		P13: nil,
-		P14: nil,
-		P15: nil,
-		P16: writeValue,
-	}
+	//pri := &model.Priority{
+	//	P1:  nil,
+	//	P2:  nil,
+	//	P3:  nil,
+	//	P4:  nil,
+	//	P5:  nil,
+	//	P6:  nil,
+	//	P7:  nil,
+	//	P8:  nil,
+	//	P9:  nil,
+	//	P10: nil,
+	//	P11: nil,
+	//	P12: nil,
+	//	P13: nil,
+	//	P14: nil,
+	//	P15: nil,
+	//	P16: writeValue,
+	//}
 
-	point := &model.Point{
-		Priority: pri,
-	}
-
-	install, res := cli.FlowPointWrite(body.UUID, point)
-	fmt.Println(res.StatusCode)
-	fmt.Println(res.StatusCode)
-	if res.StatusCode == 0 {
-		return install, errors.New("failed to find host")
-	}
-	return install, nil
+	//point := &model.Point{
+	//	Priority: pri,
+	//}
+	//
+	//install, res := cli.FlowPointWrite(body.UUID, point)
+	//fmt.Println(res.StatusCode)
+	//fmt.Println(res.StatusCode)
+	//if res.StatusCode == 0 {
+	//	return install, errors.New("failed to find host")
+	//}
+	return nil, nil
 }
 
 func ran() float64 {
