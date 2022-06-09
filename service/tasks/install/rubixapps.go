@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/NubeIO/rubix-automater/service/tasks/install/assitcli"
 
+	"github.com/NubeIO/edge/service/apps/installer"
 	automater "github.com/NubeIO/rubix-automater"
-	"github.com/NubeIO/rubix-cli-app/service/apps/installer"
 )
 
 type AppParams struct {

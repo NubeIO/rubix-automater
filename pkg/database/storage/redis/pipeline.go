@@ -3,10 +3,10 @@ package redis
 import (
 	"encoding/json"
 	"fmt"
+	pprint "github.com/NubeIO/edge/pkg/helpers/print"
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
-	pprint "github.com/NubeIO/rubix-cli-app/pkg/helpers/print"
 	"github.com/go-redis/redis/v8"
 	"sort"
 	"time"

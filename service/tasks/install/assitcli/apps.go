@@ -2,7 +2,7 @@ package assitcli
 
 import (
 	"fmt"
-	"github.com/NubeIO/rubix-cli-app/service/apps/installer"
+	"github.com/NubeIO/edge/service/apps/installer"
 )
 
 type App struct {
