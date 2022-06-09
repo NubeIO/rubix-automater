@@ -2,17 +2,19 @@ package install
 
 import (
 	"errors"
-	"github.com/NubeIO/rubix-assist/service/client"
-	"github.com/NubeIO/rubix-assist/service/em"
+	"github.com/NubeIO/rubix-automater/service/tasks/install/assitcli"
+
 	automater "github.com/NubeIO/rubix-automater"
 	"github.com/NubeIO/rubix-cli-app/service/apps/installer"
 )
 
 type AppParams struct {
-	HostUUID string `json:"hostUUID"`
-	HostName string `json:"hostName,omitempty"`
-	AppName  string `json:"appName"`
-	Version  string `json:"version"`
+	LocationName string `json:"locationName"`
+	NetworkName  string `json:"networkName"`
+	HostName     string `json:"hostName"`
+	HostUUID     string `json:"hostUUID"`
+	AppName      string `json:"appName"`
+	Version      string `json:"version"`
 }
 
 func App(args ...interface{}) (interface{}, error) {
@@ -24,12 +26,14 @@ func App(args ...interface{}) (interface{}, error) {
 }
 
 func runAppInstall(body *AppParams) (interface{}, error) {
-	cli := client.New("0.0.0.0", 1662)
-	app := &em.App{
-		HostUUID: body.HostUUID,
-		HostName: body.HostName,
-		AppName:  body.AppName,
-		Version:  body.Version,
+	cli := assitcli.New("0.0.0.0", 1662)
+	app := &assitcli.App{
+		LocationName: body.LocationName,
+		NetworkName:  body.NetworkName,
+		HostName:     body.HostName,
+		HostUUID:     body.HostUUID,
+		AppName:      body.AppName,
+		Version:      body.Version,
 	}
 	install, res := cli.InstallApp(app)
 	if res.StatusCode == 0 {

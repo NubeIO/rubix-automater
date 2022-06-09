@@ -10,14 +10,14 @@ import (
 
 var ctx = context.Background()
 
-// Client represents a redis client.
+// Client represents a redis autocli.
 type Client struct {
 	*redis.Client
 	KeyPrefix string
 	Logger    *logrus.Logger
 }
 
-// New returns a redis client.
+// New returns a redis autocli.
 func New(
 	url string, poolSize, minIdleConns int,
 	keyPrefix string, logger *logrus.Logger) *Client {

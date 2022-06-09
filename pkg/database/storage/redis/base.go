@@ -12,13 +12,13 @@ import (
 var _ automater.Storage = &Redis{}
 var ctx = context.Background()
 
-// Redis represents a redis client.
+// Redis represents a redis autocli.
 type Redis struct {
 	*rs.Client
 	pub libredis.Client
 }
 
-// New returns a redis client.
+// New returns a redis autocli.
 func New(url string, poolSize, minIdleConns int, keyPrefix string) *Redis {
 	client := rs.New(url, poolSize, minIdleConns, keyPrefix, nil)
 	c := &libredis.Config{Addr: url}

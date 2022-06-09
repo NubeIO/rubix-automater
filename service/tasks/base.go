@@ -1,7 +1,7 @@
 package tasks
 
 const (
-	PingHostTask   = "pingHost"
-	InstallAppTask = "installApp"
-	PointWriteTask = "pointWrite"
+	PingHostTask   = "PingHost"
+	InstallAppTask = "InstallApp"
+	PointWriteTask = "PointWrite"
 )
