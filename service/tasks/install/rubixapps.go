@@ -1,4 +1,4 @@
-package apps
+package install
 
 import (
 	"errors"
@@ -8,22 +8,22 @@ import (
 	"github.com/NubeIO/rubix-cli-app/service/apps/installer"
 )
 
-type InstallAppParams struct {
+type AppParams struct {
 	HostUUID string `json:"hostUUID"`
 	HostName string `json:"hostName,omitempty"`
 	AppName  string `json:"appName"`
 	Version  string `json:"version"`
 }
 
-func InstallApp(args ...interface{}) (interface{}, error) {
-	params := &InstallAppParams{}
+func App(args ...interface{}) (interface{}, error) {
+	params := &AppParams{}
 	resultsMetadata := &installer.InstallResponse{}
 	automater.DecodeTaskParams(args, params)
 	automater.DecodePreviousJobResults(args, &resultsMetadata)
 	return runAppInstall(params)
 }
 
-func runAppInstall(body *InstallAppParams) (interface{}, error) {
+func runAppInstall(body *AppParams) (interface{}, error) {
 	cli := client.New("0.0.0.0", 1662)
 	app := &em.App{
 		HostUUID: body.HostUUID,
@@ -32,11 +32,11 @@ func runAppInstall(body *InstallAppParams) (interface{}, error) {
 		Version:  body.Version,
 	}
 	install, res := cli.InstallApp(app)
-	if res.GetStatus() == 0 {
+	if res.StatusCode == 0 {
 		return install, errors.New("failed to find host")
 	}
-	if res.GetStatus() > 299 {
-		return nil, errors.New(res.GetMessage().(string))
+	if res.StatusCode > 299 {
+		return nil, errors.New(install.Error)
 	}
 	return install, nil
 }

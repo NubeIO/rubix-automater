@@ -12,6 +12,12 @@ func (inst *Client) AddPipeline(body *pipectl.PipelineBody) (data *model.Pipelin
 	resp, err := inst.Rest.R().
 		SetBody(body).
 		SetResult(&model.Pipeline{}).
+		SetError(&Response{}).
 		Post(path)
-	return resp.Result().(*model.Pipeline), response.buildResponse(resp, err)
+	response = response.buildResponse(resp, err)
+	if resp.IsSuccess() {
+		data = resp.Result().(*model.Pipeline)
+		response.Message = data
+	}
+	return data, response
 }

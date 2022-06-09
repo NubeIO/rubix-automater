@@ -67,7 +67,6 @@ func runPointWrite(body *FlowAppParams) (interface{}, error) {
 	install, res := cli.FlowPointWrite(body.UUID, point)
 	fmt.Println(res.StatusCode)
 	fmt.Println(res.StatusCode)
-	fmt.Println(res.AsString())
 	if res.StatusCode == 0 {
 		return install, errors.New("failed to find host")
 	}

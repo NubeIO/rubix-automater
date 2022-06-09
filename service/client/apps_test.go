@@ -46,7 +46,7 @@ func TestHost(*testing.T) {
 	}
 
 	data, res := client.FlowPointWrite("pnt_c60aa01f57b24f3a", point)
-	fmt.Println(res.AsString())
+
 	fmt.Println(res.StatusCode)
 	fmt.Println(data)
 

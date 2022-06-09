@@ -1,7 +1,7 @@
 server:
   protocol: http
   http:
-    port: 8089
+    port: 1663
 job_queue:
   option: redis
   memory_job_queue:

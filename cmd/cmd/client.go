@@ -82,7 +82,7 @@ func runClient(cmd *cobra.Command, args []string) {
 		pipeline, res := cli.AddPipeline(body)
 		fmt.Println(res.StatusCode)
 		if res.StatusCode > 299 {
-			fmt.Println(res.AsString())
+
 		}
 		fmt.Println("ADDED NEW PIPELINE", pipeline.Name)
 	}
