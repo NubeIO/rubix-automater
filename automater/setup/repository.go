@@ -3,7 +3,7 @@ package setup
 import (
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/pkg/config"
-	"github.com/NubeIO/rubix-automater/pkg/database/storage/redis"
+	"github.com/NubeIO/rubix-automater/pkg/database/storage/db"
 )
 
 func StorageFactory(cfg config.Storage) automater.Storage {

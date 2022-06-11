@@ -11,14 +11,23 @@ import (
 	"sort"
 )
 
+const automaterTransaction = "automater-transaction"
+
 // CreateTransaction adds a new trans result to the storage.
-func (rs *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error) {
+func (inst *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error) {
 	id, _ := uuid.New().Make("tra")
-	key := rs.getRedisKeyForTransaction(id)
+	key := inst.getRedisKeyForTransaction(id)
 	now := ttime.New().Now()
+	isPipeLine := false
+	if job.PipelineID != "" {
+		isPipeLine = true
+	}
 	trans := &model.Transaction{
 		UUID:          id,
+		PipelineID:    job.PipelineID,
 		JobID:         job.UUID,
+		TaskType:      job.TaskName,
+		IsPipeLine:    isPipeLine,
 		Status:        job.Status,
 		FailureReason: job.FailureReason,
 		StartedAt:     job.StartedAt,
@@ -29,26 +38,42 @@ func (rs *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error) {
 
 	value, err := json.Marshal(trans)
 	if err != nil {
-		fmt.Println(err, 111)
 		return nil, err
 	}
-	err = rs.Set(ctx, key, value, 0).Err()
+	err = inst.Set(ctx, key, value, 0).Err()
 	if err != nil {
-		fmt.Println(err, 2222)
 		return nil, err
 	}
-	tran, err := rs.GetTransaction(id)
+	tran, err := inst.GetTransaction(id)
 	if err != nil {
-		fmt.Println(err, 3333)
 		return nil, err
 	}
+
+	pubTrans := model.PublishTransaction{
+		UUID:          tran.UUID,
+		JobID:         job.UUID,
+		IsPipeLine:    isPipeLine,
+		PipelineID:    job.PipelineID,
+		TaskType:      tran.TaskType,
+		Status:        tran.Status.String(),
+		FailureReason: tran.FailureReason,
+		CreatedAt:     tran.CreatedAt,
+		StartedAt:     tran.StartedAt,
+		CompletedAt:   tran.CompletedAt,
+		Duration:      tran.Duration,
+	}
+	err = inst.Pub(automaterTransaction, pubTrans)
+	if err != nil {
+		return nil, err
+	}
+
 	return tran, nil
 }
 
 // DeleteTransaction deletes a trans from the storage.
-func (rs *Redis) DeleteTransaction(uuid string) error {
-	key := rs.getRedisKeyForTransaction(uuid)
-	_, err := rs.Del(ctx, key).Result()
+func (inst *Redis) DeleteTransaction(uuid string) error {
+	key := inst.getRedisKeyForTransaction(uuid)
+	_, err := inst.Del(ctx, key).Result()
 	if err != nil {
 		return err
 	}
@@ -56,10 +81,10 @@ func (rs *Redis) DeleteTransaction(uuid string) error {
 }
 
 // GetTransactions fetches all trans from the storage, optionally filters the jobs by status.
-func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, error) {
+func (inst *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, error) {
 	var keys []string
-	key := rs.GetRedisPrefixedKey(fmt.Sprintf("%s:*", transaction))
-	iter := rs.Scan(ctx, 0, key, 0).Iterator()
+	key := inst.GetRedisPrefixedKey(fmt.Sprintf("%s:*", transaction))
+	iter := inst.Scan(ctx, 0, key, 0).Iterator()
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())
 	}
@@ -68,7 +93,7 @@ func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, 
 	}
 	var jobs []*model.Transaction
 	for _, key := range keys {
-		value, err := rs.Get(ctx, key).Bytes()
+		value, err := inst.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
@@ -88,9 +113,9 @@ func (rs *Redis) GetTransactions(status model.JobStatus) ([]*model.Transaction, 
 }
 
 // GetTransactionsByJob fetches all trans from the storage by job
-func (rs *Redis) GetTransactionsByJob(jobId string) ([]*model.Transaction, error) {
+func (inst *Redis) GetTransactionsByJob(jobId string) ([]*model.Transaction, error) {
 	var jobs []*model.Transaction
-	transactions, err := rs.GetTransactions(model.Undefined)
+	transactions, err := inst.GetTransactions(model.Undefined)
 	if err != nil {
 		return nil, err
 	}
@@ -103,9 +128,9 @@ func (rs *Redis) GetTransactionsByJob(jobId string) ([]*model.Transaction, error
 }
 
 // GetTransaction fetches a trans from the storage.
-func (rs *Redis) GetTransaction(uuid string) (*model.Transaction, error) {
-	key := rs.getRedisKeyForTransaction(uuid)
-	val, err := rs.Get(ctx, key).Bytes()
+func (inst *Redis) GetTransaction(uuid string) (*model.Transaction, error) {
+	key := inst.getRedisKeyForTransaction(uuid)
+	val, err := inst.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, &apperrors.NotFoundErr{UUID: uuid, ResourceName: "transactionctl"}

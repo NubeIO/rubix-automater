@@ -30,8 +30,8 @@ func New(url string, poolSize, minIdleConns int, keyPrefix string) *Redis {
 }
 
 // WipeDB wipes the db.
-func (rs *Redis) WipeDB() error {
-	err := rs.FlushDB(ctx).Err()
+func (inst *Redis) WipeDB() error {
+	err := inst.FlushDB(ctx).Err()
 	if err != nil {
 		return err
 	}
@@ -45,18 +45,18 @@ const (
 	jobresult   = "jobresult"
 )
 
-func (rs *Redis) getRedisKeyForPipeline(id string) string {
-	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", pipeline, id))
+func (inst *Redis) getRedisKeyForPipeline(id string) string {
+	return inst.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", pipeline, id))
 }
 
-func (rs *Redis) getRedisKeyForJob(id string) string {
-	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", job, id))
+func (inst *Redis) getRedisKeyForJob(id string) string {
+	return inst.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", job, id))
 }
 
-func (rs *Redis) getRedisKeyForTransaction(id string) string {
-	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", transaction, id))
+func (inst *Redis) getRedisKeyForTransaction(id string) string {
+	return inst.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", transaction, id))
 }
 
-func (rs *Redis) getRedisKeyForJobResult(id string) string {
-	return rs.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", jobresult, id))
+func (inst *Redis) getRedisKeyForJobResult(id string) string {
+	return inst.GetRedisPrefixedKey(fmt.Sprintf("%s:%s", jobresult, id))
 }

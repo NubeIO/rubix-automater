@@ -22,6 +22,10 @@ func (inst *Client) InstallApp(body *App) (data *installer.InstallResponse, resp
 		SetResult(&installer.InstallResponse{}).
 		SetError(&Response{}).
 		Post(path)
+
+	fmt.Println(22222)
+	fmt.Println(resp.StatusCode())
+	fmt.Println(resp.String())
 	response = response.buildResponse(resp, err)
 	if resp.IsSuccess() {
 		data = resp.Result().(*installer.InstallResponse)

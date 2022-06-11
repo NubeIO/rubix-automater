@@ -8,14 +8,14 @@ import (
 )
 
 // CreateJobResult adds a new job result to the storage.
-func (rs *Redis) CreateJobResult(result *model.JobResult) error {
-	key := rs.getRedisKeyForJobResult(result.JobID)
+func (inst *Redis) CreateJobResult(result *model.JobResult) error {
+	key := inst.getRedisKeyForJobResult(result.JobID)
 	value, err := json.Marshal(result)
 	if err != nil {
 		return err
 	}
 
-	err = rs.Set(ctx, key, value, 0).Err()
+	err = inst.Set(ctx, key, value, 0).Err()
 	if err != nil {
 		return err
 	}
@@ -23,9 +23,9 @@ func (rs *Redis) CreateJobResult(result *model.JobResult) error {
 }
 
 // GetJobResult fetches a job result from the storage.
-func (rs *Redis) GetJobResult(jobID string) (*model.JobResult, error) {
-	key := rs.getRedisKeyForJobResult(jobID)
-	val, err := rs.Get(ctx, key).Bytes()
+func (inst *Redis) GetJobResult(jobID string) (*model.JobResult, error) {
+	key := inst.getRedisKeyForJobResult(jobID)
+	val, err := inst.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, &apperrors.NotFoundErr{UUID: jobID, ResourceName: "job result"}
@@ -41,14 +41,14 @@ func (rs *Redis) GetJobResult(jobID string) (*model.JobResult, error) {
 }
 
 // UpdateJobResult updates a job result to the storage.
-func (rs *Redis) UpdateJobResult(jobID string, result *model.JobResult) error {
-	key := rs.getRedisKeyForJobResult(jobID)
+func (inst *Redis) UpdateJobResult(jobID string, result *model.JobResult) error {
+	key := inst.getRedisKeyForJobResult(jobID)
 	value, err := json.Marshal(result)
 	if err != nil {
 		return err
 	}
 
-	err = rs.Set(ctx, key, value, 0).Err()
+	err = inst.Set(ctx, key, value, 0).Err()
 	if err != nil {
 		return err
 	}
@@ -56,9 +56,9 @@ func (rs *Redis) UpdateJobResult(jobID string, result *model.JobResult) error {
 }
 
 // DeleteJobResult deletes a job result from the storage.
-func (rs *Redis) DeleteJobResult(jobID string) error {
-	key := rs.getRedisKeyForJobResult(jobID)
-	_, err := rs.Del(ctx, key).Result()
+func (inst *Redis) DeleteJobResult(jobID string) error {
+	key := inst.getRedisKeyForJobResult(jobID)
+	_, err := inst.Del(ctx, key).Result()
 	if err != nil {
 		return err
 	}

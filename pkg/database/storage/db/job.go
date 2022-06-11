@@ -14,13 +14,13 @@ import (
 )
 
 // CreateJob adds a new job to the storage.
-func (rs *Redis) CreateJob(j *model.Job) error {
-	key := rs.getRedisKeyForJob(j.UUID)
+func (inst *Redis) CreateJob(j *model.Job) error {
+	key := inst.getRedisKeyForJob(j.UUID)
 	value, err := json.Marshal(j)
 	if err != nil {
 		return err
 	}
-	err = rs.Set(ctx, key, value, 0).Err()
+	err = inst.Set(ctx, key, value, 0).Err()
 	if err != nil {
 		return err
 	}
@@ -28,9 +28,9 @@ func (rs *Redis) CreateJob(j *model.Job) error {
 }
 
 // GetJob fetches a job from the storage.
-func (rs *Redis) GetJob(uuid string) (*model.Job, error) {
-	key := rs.getRedisKeyForJob(uuid)
-	val, err := rs.Get(ctx, key).Bytes()
+func (inst *Redis) GetJob(uuid string) (*model.Job, error) {
+	key := inst.getRedisKeyForJob(uuid)
+	val, err := inst.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, &apperrors.NotFoundErr{UUID: uuid, ResourceName: "job"}
@@ -46,10 +46,10 @@ func (rs *Redis) GetJob(uuid string) (*model.Job, error) {
 }
 
 // GetJobs fetches all jobs from the storage, optionally filters the jobs by status.
-func (rs *Redis) GetJobs(status model.JobStatus) ([]*model.Job, error) {
+func (inst *Redis) GetJobs(status model.JobStatus) ([]*model.Job, error) {
 	var keys []string
-	key := rs.GetRedisPrefixedKey("job:*")
-	iter := rs.Scan(ctx, 0, key, 0).Iterator()
+	key := inst.GetRedisPrefixedKey("job:*")
+	iter := inst.Scan(ctx, 0, key, 0).Iterator()
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())
 	}
@@ -58,7 +58,7 @@ func (rs *Redis) GetJobs(status model.JobStatus) ([]*model.Job, error) {
 	}
 	var jobs []*model.Job
 	for _, key := range keys {
-		value, err := rs.Get(ctx, key).Bytes()
+		value, err := inst.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
@@ -79,9 +79,9 @@ func (rs *Redis) GetJobs(status model.JobStatus) ([]*model.Job, error) {
 }
 
 // GetJobsByPipelineID fetches the jobs of the specified pipeline.
-func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*model.Job, error) {
-	key := rs.getRedisKeyForPipeline(pipelineID)
-	val, err := rs.Get(ctx, key).Bytes()
+func (inst *Redis) GetJobsByPipelineID(pipelineID string) ([]*model.Job, error) {
+	key := inst.getRedisKeyForPipeline(pipelineID)
+	val, err := inst.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			// Mimic the relational storages behavior.
@@ -99,9 +99,9 @@ func (rs *Redis) GetJobsByPipelineID(pipelineID string) ([]*model.Job, error) {
 }
 
 // Recycle updates a job to the storage.
-func (rs *Redis) Recycle(uuid string, j *model.Job) (*model.Job, error) {
+func (inst *Redis) Recycle(uuid string, j *model.Job) (*model.Job, error) {
 	var err error
-	_, err = rs.GetJob(uuid)
+	_, err = inst.GetJob(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -111,19 +111,19 @@ func (rs *Redis) Recycle(uuid string, j *model.Job) (*model.Job, error) {
 	j.ScheduledAt = nil
 	j.StartedAt = nil
 	j.CreatedAt = &now
-	err = rs.Watch(ctx, func(tx *redis.Tx) error {
-		key := rs.getRedisKeyForJob(uuid)
+	err = inst.Watch(ctx, func(tx *redis.Tx) error {
+		key := inst.getRedisKeyForJob(uuid)
 		value, err := json.Marshal(j)
 		if err != nil {
 			return err
 		}
-		err = rs.Set(ctx, key, value, 0).Err()
+		err = inst.Set(ctx, key, value, 0).Err()
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	job, err := rs.GetJob(uuid)
+	job, err := inst.GetJob(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -131,22 +131,22 @@ func (rs *Redis) Recycle(uuid string, j *model.Job) (*model.Job, error) {
 }
 
 // UpdateJob updates a job to the storage.
-func (rs *Redis) UpdateJob(uuid string, j *model.Job) (*model.Job, error) {
-	err := rs.Watch(ctx, func(tx *redis.Tx) error {
-		key := rs.getRedisKeyForJob(uuid)
+func (inst *Redis) UpdateJob(uuid string, j *model.Job) (*model.Job, error) {
+	err := inst.Watch(ctx, func(tx *redis.Tx) error {
+		key := inst.getRedisKeyForJob(uuid)
 		value, err := json.Marshal(j)
 		if err != nil {
 			return err
 		}
 
-		err = rs.Set(ctx, key, value, 0).Err()
+		err = inst.Set(ctx, key, value, 0).Err()
 		if err != nil {
 			return err
 		}
 		if j.BelongsToPipeline() {
 			// Sync pipeline job.
-			pipelineKey := rs.getRedisKeyForPipeline(j.PipelineID)
-			val, err := rs.Get(ctx, pipelineKey).Bytes()
+			pipelineKey := inst.getRedisKeyForPipeline(j.PipelineID)
+			val, err := inst.Get(ctx, pipelineKey).Bytes()
 			if err != nil {
 				return err
 			}
@@ -161,14 +161,14 @@ func (rs *Redis) UpdateJob(uuid string, j *model.Job) (*model.Job, error) {
 					p.Jobs[i] = j
 				}
 			}
-			err = rs.UpdatePipeline(p.UUID, p)
+			err = inst.UpdatePipeline(p.UUID, p)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
-	job, err := rs.GetJob(uuid)
+	job, err := inst.GetJob(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -176,19 +176,19 @@ func (rs *Redis) UpdateJob(uuid string, j *model.Job) (*model.Job, error) {
 }
 
 // DeleteJob deletes a job from the storage.
-func (rs *Redis) DeleteJob(uuid string) error {
-	key := rs.getRedisKeyForJob(uuid)
-	byJob, err := rs.GetTransactionsByJob(uuid)
+func (inst *Redis) DeleteJob(uuid string) error {
+	key := inst.getRedisKeyForJob(uuid)
+	byJob, err := inst.GetTransactionsByJob(uuid)
 	if err != nil {
 		return err
 	}
 	for _, t := range byJob {
-		err := rs.DeleteTransaction(t.UUID)
+		err := inst.DeleteTransaction(t.UUID)
 		if err != nil {
 			return err
 		}
 	}
-	_, err = rs.Del(ctx, key).Result()
+	_, err = inst.Del(ctx, key).Result()
 	if err != nil {
 		return err
 	}
@@ -206,10 +206,10 @@ func timeDif(t1, t2 time.Time) string {
 }
 
 // GetDueJobs fetches all jobs scheduled to run before now and have not been scheduled yet.
-func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
+func (inst *Redis) GetDueJobs() ([]*model.Job, error) {
 	var keys []string
-	key := rs.GetRedisPrefixedKey("job:*")
-	iter := rs.Scan(ctx, 0, key, 0).Iterator()
+	key := inst.GetRedisPrefixedKey("job:*")
+	iter := inst.Scan(ctx, 0, key, 0).Iterator()
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())
 	}
@@ -221,7 +221,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 	var pendingJobs []*model.Job
 	for _, key := range keys {
 
-		value, err := rs.Get(ctx, key).Bytes()
+		value, err := inst.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
@@ -239,6 +239,7 @@ func (rs *Redis) GetDueJobs() ([]*model.Job, error) {
 				logrus.Infof("name:%s task:%s, will run at:%s", j.Name, j.TaskName, timeDif(*j.RunAt, time.Now()))
 
 			}
+
 		}
 	}
 	logrus.Infof("get due jobs count:%d due", len(pendingJobs))

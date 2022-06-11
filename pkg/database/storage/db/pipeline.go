@@ -13,27 +13,27 @@ import (
 )
 
 // CreatePipeline adds a new pipeline and of its jobs to the storage.
-func (rs *Redis) CreatePipeline(p *model.Pipeline) error {
+func (inst *Redis) CreatePipeline(p *model.Pipeline) error {
 	pprint.PrintJOSN(p)
-	err := rs.Watch(ctx, func(tx *redis.Tx) error {
+	err := inst.Watch(ctx, func(tx *redis.Tx) error {
 
 		for _, j := range p.Jobs {
-			key := rs.getRedisKeyForJob(j.UUID)
+			key := inst.getRedisKeyForJob(j.UUID)
 			value, err := json.Marshal(j)
 			if err != nil {
 				return err
 			}
-			err = rs.Set(ctx, key, value, 0).Err()
+			err = inst.Set(ctx, key, value, 0).Err()
 			if err != nil {
 				return err
 			}
 		}
-		key := rs.getRedisKeyForPipeline(p.UUID)
+		key := inst.getRedisKeyForPipeline(p.UUID)
 		value, err := json.Marshal(p)
 		if err != nil {
 			return err
 		}
-		err = rs.Set(ctx, key, value, 0).Err()
+		err = inst.Set(ctx, key, value, 0).Err()
 		if err != nil {
 			return err
 		}
@@ -47,9 +47,9 @@ func (rs *Redis) CreatePipeline(p *model.Pipeline) error {
 }
 
 // GetPipeline fetches a pipeline from the storage.
-func (rs *Redis) GetPipeline(uuid string) (*model.Pipeline, error) {
-	key := rs.getRedisKeyForPipeline(uuid)
-	val, err := rs.Get(ctx, key).Bytes()
+func (inst *Redis) GetPipeline(uuid string) (*model.Pipeline, error) {
+	key := inst.getRedisKeyForPipeline(uuid)
+	val, err := inst.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, &apperrors.NotFoundErr{UUID: uuid, ResourceName: "pipeline"}
@@ -66,10 +66,10 @@ func (rs *Redis) GetPipeline(uuid string) (*model.Pipeline, error) {
 }
 
 // GetPipelines fetches all pipelines from the storage, optionally filters the pipelines by status.
-func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error) {
+func (inst *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error) {
 	var keys []string
-	key := rs.GetRedisPrefixedKey(fmt.Sprintf("%s:*", pipeline))
-	iter := rs.Scan(ctx, 0, key, 0).Iterator()
+	key := inst.GetRedisPrefixedKey(fmt.Sprintf("%s:*", pipeline))
+	iter := inst.Scan(ctx, 0, key, 0).Iterator()
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())
 	}
@@ -79,7 +79,7 @@ func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 
 	var pipelines []*model.Pipeline
 	for _, key := range keys {
-		value, err := rs.Get(ctx, key).Bytes()
+		value, err := inst.Get(ctx, key).Bytes()
 		if err != nil {
 			return nil, err
 		}
@@ -101,9 +101,9 @@ func (rs *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, error)
 }
 
 // RecyclePipeline updates a pipeline to the storage.
-func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
+func (inst *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
 	getExisting := p
-	jobs, err := rs.GetJobsByPipelineID(uuid) //get the existing pipeline jobs
+	jobs, err := inst.GetJobsByPipelineID(uuid) //get the existing pipeline jobs
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipelin
 			return nil, err
 		}
 		job.RunAt = &runAtTime
-		recycleJob, err := rs.Recycle(job.UUID, job) // recycle jobs
+		recycleJob, err := inst.Recycle(job.UUID, job) // recycle jobs
 		if err != nil {
 			return nil, err
 		}
@@ -131,11 +131,11 @@ func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipelin
 	getExisting.StartedAt = nil
 	getExisting.Duration = nil
 
-	err = rs.UpdatePipeline(uuid, getExisting)
+	err = inst.UpdatePipeline(uuid, getExisting)
 	if err != nil {
 		return nil, err
 	}
-	getPipeline, err := rs.GetPipeline(uuid)
+	getPipeline, err := inst.GetPipeline(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -143,14 +143,14 @@ func (rs *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipelin
 }
 
 // UpdatePipeline updates a pipeline to the storage.
-func (rs *Redis) UpdatePipeline(uuid string, p *model.Pipeline) error {
-	key := rs.getRedisKeyForPipeline(uuid)
+func (inst *Redis) UpdatePipeline(uuid string, p *model.Pipeline) error {
+	key := inst.getRedisKeyForPipeline(uuid)
 	value, err := json.Marshal(p)
 	if err != nil {
 		return err
 	}
 
-	err = rs.Set(ctx, key, value, 0).Err()
+	err = inst.Set(ctx, key, value, 0).Err()
 	if err != nil {
 		return err
 	}
@@ -158,11 +158,11 @@ func (rs *Redis) UpdatePipeline(uuid string, p *model.Pipeline) error {
 }
 
 // DeletePipeline deletes a pipeline and all its jobs from the storage.
-func (rs *Redis) DeletePipeline(uuid string) error {
-	err := rs.Watch(ctx, func(tx *redis.Tx) error {
+func (inst *Redis) DeletePipeline(uuid string) error {
+	err := inst.Watch(ctx, func(tx *redis.Tx) error {
 		var keys []string
-		key := rs.GetRedisPrefixedKey("job:*")
-		iter := rs.Scan(ctx, 0, key, 0).Iterator()
+		key := inst.GetRedisPrefixedKey("job:*")
+		iter := inst.Scan(ctx, 0, key, 0).Iterator()
 		for iter.Next(ctx) {
 			keys = append(keys, iter.Val())
 		}
@@ -172,7 +172,7 @@ func (rs *Redis) DeletePipeline(uuid string) error {
 
 		var jobs []*model.Job
 		for _, key := range keys {
-			value, err := rs.Get(ctx, key).Bytes()
+			value, err := inst.Get(ctx, key).Bytes()
 			if err != nil {
 				return err
 			}
@@ -185,19 +185,19 @@ func (rs *Redis) DeletePipeline(uuid string) error {
 			}
 		}
 		for _, j := range jobs {
-			key = rs.getRedisKeyForJobResult(j.UUID)
-			_, err := rs.Del(ctx, key).Result()
+			key = inst.getRedisKeyForJobResult(j.UUID)
+			_, err := inst.Del(ctx, key).Result()
 			if err != nil {
 				return err
 			}
-			key = rs.getRedisKeyForJob(j.UUID)
-			_, err = rs.Del(ctx, key).Result()
+			key = inst.getRedisKeyForJob(j.UUID)
+			_, err = inst.Del(ctx, key).Result()
 			if err != nil {
 				return err
 			}
 		}
-		key = rs.getRedisKeyForPipeline(uuid)
-		_, err := rs.Del(ctx, key).Result()
+		key = inst.getRedisKeyForPipeline(uuid)
+		_, err := inst.Del(ctx, key).Result()
 		if err != nil {
 			return err
 		}
