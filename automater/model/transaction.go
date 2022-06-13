@@ -16,6 +16,8 @@ type Transaction struct {
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
 
+	RunAtUUID string `json:"run_at_uuid,omitempty"`
+
 	Status JobStatus `json:"status"`
 
 	FailureReason string `json:"failure_reason,omitempty"`
@@ -42,6 +44,8 @@ type PublishTransaction struct {
 
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
+
+	RunAtUUID string `json:"run_at_uuid,omitempty"`
 
 	Status string `json:"status"`
 

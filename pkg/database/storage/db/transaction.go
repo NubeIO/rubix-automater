@@ -19,8 +19,14 @@ func (inst *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error)
 	key := inst.getRedisKeyForTransaction(id)
 	now := ttime.New().Now()
 	isPipeLine := false
+	runAtUUID := "false"
 	if job.PipelineID != "" {
 		isPipeLine = true
+		getPipeline, err := inst.GetPipeline(job.PipelineID)
+		if err != nil {
+			return nil, err
+		}
+		runAtUUID = getPipeline.RunAtUUID
 	}
 	trans := &model.Transaction{
 		UUID:          id,
@@ -28,6 +34,7 @@ func (inst *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error)
 		JobID:         job.UUID,
 		TaskType:      job.TaskName,
 		IsPipeLine:    isPipeLine,
+		RunAtUUID:     runAtUUID,
 		Status:        job.Status,
 		FailureReason: job.FailureReason,
 		StartedAt:     job.StartedAt,
@@ -56,6 +63,7 @@ func (inst *Redis) CreateTransaction(job *model.Job) (*model.Transaction, error)
 		PipelineID:    job.PipelineID,
 		TaskType:      tran.TaskType,
 		Status:        tran.Status.String(),
+		RunAtUUID:     tran.RunAtUUID,
 		FailureReason: tran.FailureReason,
 		CreatedAt:     tran.CreatedAt,
 		StartedAt:     tran.StartedAt,

@@ -3,10 +3,10 @@ package redis
 import (
 	"encoding/json"
 	"fmt"
-	pprint "github.com/NubeIO/edge/pkg/helpers/print"
 	"github.com/NubeIO/rubix-automater/automater"
 	"github.com/NubeIO/rubix-automater/automater/model"
 	"github.com/NubeIO/rubix-automater/pkg/helpers/apperrors"
+	"github.com/NubeIO/rubix-automater/pkg/helpers/uuid"
 	"github.com/go-redis/redis/v8"
 	"sort"
 	"time"
@@ -14,7 +14,8 @@ import (
 
 // CreatePipeline adds a new pipeline and of its jobs to the storage.
 func (inst *Redis) CreatePipeline(p *model.Pipeline) error {
-	pprint.PrintJOSN(p)
+	runAtUUID, _ := uuid.New().Make("run")
+	p.RunAtUUID = runAtUUID
 	err := inst.Watch(ctx, func(tx *redis.Tx) error {
 
 		for _, j := range p.Jobs {
@@ -101,9 +102,11 @@ func (inst *Redis) GetPipelines(status model.JobStatus) ([]*model.Pipeline, erro
 }
 
 // RecyclePipeline updates a pipeline to the storage.
-func (inst *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipeline, error) {
+func (inst *Redis) RecyclePipeline(id string, p *model.Pipeline) (*model.Pipeline, error) {
 	getExisting := p
-	jobs, err := inst.GetJobsByPipelineID(uuid) //get the existing pipeline jobs
+	runAtUUID, _ := uuid.New().Make("run")
+	p.RunAtUUID = runAtUUID
+	jobs, err := inst.GetJobsByPipelineID(id) //get the existing pipeline jobs
 	if err != nil {
 		return nil, err
 	}
@@ -131,11 +134,11 @@ func (inst *Redis) RecyclePipeline(uuid string, p *model.Pipeline) (*model.Pipel
 	getExisting.StartedAt = nil
 	getExisting.Duration = nil
 
-	err = inst.UpdatePipeline(uuid, getExisting)
+	err = inst.UpdatePipeline(id, getExisting)
 	if err != nil {
 		return nil, err
 	}
-	getPipeline, err := inst.GetPipeline(uuid)
+	getPipeline, err := inst.GetPipeline(id)
 	if err != nil {
 		return nil, err
 	}

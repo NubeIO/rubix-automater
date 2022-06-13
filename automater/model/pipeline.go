@@ -29,6 +29,8 @@ type Pipeline struct {
 	// RunAt is the UTC timestamp indicating the time for the pipeline to run.
 	RunAt *time.Time `json:"schedule_at,omitempty"`
 
+	RunAtUUID string `json:"run_at_uuid"`
+
 	// CreatedAt is the UTC timestamp of the pipeline creation.
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
