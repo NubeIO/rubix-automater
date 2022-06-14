@@ -37,7 +37,7 @@ func New(
 
 // Create creates a new job.
 func (srv *jobService) Create(
-	name, taskName, description string, scheduleAt string,
+	name, taskName, subTaskName, description string, scheduleAt string,
 	timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error) {
 	id, _ := srv.uuidGen.Make("job")
 
@@ -50,7 +50,7 @@ func (srv *jobService) Create(
 
 	createdAt := srv.time.Now()
 	j := model.NewJob(
-		id, name, taskName, description,
+		id, name, taskName, subTaskName, description,
 		"", "", timeout, &runAt,
 		&createdAt, false, disable, options, taskParams)
 

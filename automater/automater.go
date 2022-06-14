@@ -58,7 +58,7 @@ type JobQueue interface {
 
 // JobService represents a driver actor server interface.
 type JobService interface {
-	Create(name, taskName, description string, ScheduleAt string, timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error)
+	Create(name, taskName, subTaskName, description string, ScheduleAt string, timeout int, disable bool, options *model.JobOptions, taskParams map[string]interface{}) (*model.Job, error)
 	Get(uuid string) (*model.Job, error)
 	GetJobs(status string) ([]*model.Job, error)
 	Update(uuid string, body *model.Job) (*model.Job, error)

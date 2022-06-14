@@ -58,6 +58,8 @@ type Job struct {
 	// TaskName is the name of the tasks to be executed.
 	TaskName string `json:"task_name"`
 
+	SubTaskName string `json:"sub_task"`
+
 	// TaskParams are the required parameters for the tasks assigned to the specific job.
 	TaskParams map[string]interface{} `json:"task_params,omitempty"`
 
@@ -87,7 +89,7 @@ type Job struct {
 
 // NewJob initializes and returns a new Job instance.
 func NewJob(
-	uuid, name, taskName, description, pipelineID, nextJobID string,
+	uuid, name, taskName, subTaskName, description, pipelineID, nextJobID string,
 	timeout int, runAt *time.Time, createdAt *time.Time,
 	usePreviousResults bool, disable bool, options *JobOptions, taskParams map[string]interface{}) *Job {
 
@@ -98,6 +100,7 @@ func NewJob(
 		UUID:               uuid,
 		Name:               name,
 		TaskName:           taskName,
+		SubTaskName:        subTaskName,
 		PipelineID:         pipelineID,
 		NextJobID:          nextJobID,
 		UsePreviousResults: usePreviousResults,

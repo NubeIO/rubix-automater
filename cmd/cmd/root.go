@@ -5,7 +5,6 @@ import (
 	automater "github.com/NubeIO/rubix-automater"
 	"github.com/NubeIO/rubix-automater/service/tasks"
 	"github.com/NubeIO/rubix-automater/service/tasks/flow"
-	"github.com/NubeIO/rubix-automater/service/tasks/install"
 	"github.com/NubeIO/rubix-automater/service/tasks/ping"
 	"github.com/spf13/cobra"
 	"os"
@@ -33,7 +32,6 @@ func runRoot(cmd *cobra.Command, args []string) {
 	if rootFlags.server {
 		v := automater.New(rootFlags.config)
 		v.RegisterTask(tasks.PingHostTask, ping.Host)
-		v.RegisterTask(tasks.InstallAppTask, install.App)
 		v.RegisterTask(tasks.PointWriteTask, flow.PointWrite)
 		v.Run()
 	}

@@ -63,7 +63,7 @@ func (srv *pipeLineService) Create(name, description, scheduleAt string, pipelin
 		}
 		createdAt := srv.time.Now()
 		j := model.NewJob(
-			jobID, job.Name, job.TaskName, job.Description, pipelineUUID, nextJobID,
+			jobID, job.Name, job.TaskName, job.SubTaskName, job.Description, pipelineUUID, nextJobID,
 			job.Timeout, &runAtTime, &createdAt, job.UsePreviousResults, job.Disable, job.JobOptions, job.TaskParams)
 		if err := j.Validate(srv.taskRepo); err != nil {
 			return nil, &apperrors.ResourceValidationErr{Message: err.Error()}

@@ -10,6 +10,7 @@ type JobBody struct {
 	Description        string                 `json:"description"`
 	Disable            bool                   `json:"disable"`
 	TaskName           string                 `json:"task_name"`
+	SubTaskName        string                 `json:"sub_task"`
 	ScheduleAt         string                 `json:"schedule_at"`
 	Timeout            int                    `json:"timeout"`
 	Options            *model.JobOptions      `json:"options"`
