@@ -38,6 +38,7 @@ func (hdl *PipelineHTTPHandler) Create(c *gin.Context) {
 			Name:               jobDTO.Name,
 			Description:        jobDTO.Description,
 			TaskName:           jobDTO.TaskName,
+			SubTaskName:        jobDTO.SubTaskName,
 			Timeout:            jobDTO.Timeout,
 			TaskParams:         jobDTO.TaskParams,
 			UsePreviousResults: jobDTO.UsePreviousResults,

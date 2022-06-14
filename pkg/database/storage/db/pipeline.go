@@ -17,7 +17,6 @@ func (inst *Redis) CreatePipeline(p *model.Pipeline) error {
 	runAtUUID, _ := uuid.New().Make("run")
 	p.RunAtUUID = runAtUUID
 	err := inst.Watch(ctx, func(tx *redis.Tx) error {
-
 		for _, j := range p.Jobs {
 			key := inst.getRedisKeyForJob(j.UUID)
 			value, err := json.Marshal(j)

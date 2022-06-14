@@ -4,7 +4,7 @@ import (
 	"fmt"
 	automater "github.com/NubeIO/rubix-automater"
 	"github.com/NubeIO/rubix-automater/service/tasks"
-	"github.com/NubeIO/rubix-automater/service/tasks/flow"
+	apptask "github.com/NubeIO/rubix-automater/service/tasks/apps"
 	"github.com/NubeIO/rubix-automater/service/tasks/ping"
 	"github.com/spf13/cobra"
 	"os"
@@ -32,7 +32,7 @@ func runRoot(cmd *cobra.Command, args []string) {
 	if rootFlags.server {
 		v := automater.New(rootFlags.config)
 		v.RegisterTask(tasks.PingHostTask, ping.Host)
-		v.RegisterTask(tasks.PointWriteTask, flow.PointWrite)
+		v.RegisterTask(tasks.SubTask, apptask.App)
 		v.Run()
 	}
 

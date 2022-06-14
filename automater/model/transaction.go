@@ -11,7 +11,8 @@ type Transaction struct {
 
 	IsPipeLine bool `json:"is_pipe_line"`
 
-	TaskType string `json:"task_type"`
+	TaskType    string `json:"task_type"`
+	SubTaskType string `json:"sub_task_type"`
 
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
@@ -41,6 +42,8 @@ type PublishTransaction struct {
 	IsPipeLine bool `json:"is_pipe_line"`
 
 	TaskType string `json:"task_type"`
+
+	SubTaskType string `json:"sub_task_type"`
 
 	// PipelineID is the auto-generated pipeline identifier in UUID4 format.
 	PipelineID string `json:"pipeline_id,omitempty"`
