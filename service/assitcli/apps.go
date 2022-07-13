@@ -1,14 +1,19 @@
 package assitcli
 
 type AppTask struct {
-	LocationName    string   `json:"locationName"`
-	NetworkName     string   `json:"networkName"`
-	HostName        string   `json:"hostName"`
-	HostUUID        string   `json:"hostUUID"`
-	AppName         string   `json:"appName"`
-	SubTask         string   `json:"subTask"`
-	Version         string   `json:"version"`
-	OrderedTaskList []string `json:"orderedTaskList"`
+	Description        string   `json:"description"`
+	LocationName       string   `json:"locationName"`
+	NetworkName        string   `json:"networkName"`
+	HostName           string   `json:"hostName"`
+	HostUUID           string   `json:"hostUUID"`
+	AppName            string   `json:"appName"`
+	SubTask            string   `json:"subTask"`
+	Version            string   `json:"version"`
+	ManualInstall      bool     `json:"manualInstall"`      // will not download from GitHub, and will use the app-store download path
+	ManualAssetZipName string   `json:"manualAssetZipName"` // flow-framework-0.5.5-1575cf89.amd64.zip
+	ManualAssetTag     string   `json:"manualAssetTag"`     // this is the release tag as in v0.0.1
+	Cleanup            bool     `json:"cleanup"`
+	OrderedTaskList    []string `json:"orderedTaskList"`
 }
 
 type TaskResponse struct {

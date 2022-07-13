@@ -66,5 +66,4 @@ func ping(url string, port int) (found bool) {
 	}
 	logrus.Errorln("run task ping error:", err)
 	return false
-
 }
